@@ -1,0 +1,6 @@
+lib_managed
+target
+.idea
+out
+*~
+*.html
