@@ -5,7 +5,6 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with AkkaProject w
   val akkaCamel = akkaModule("camel")
   val akkaKernel = akkaModule("kernel")
   val junit = "junit" % "junit" % "4.8.1" % "test->default"
-  val ftpApache = "org.apache.ftpserver" % "ftplet-api" % "1.0.4" % "compile"
   val camelFtp= "org.apache.camel" % "camel-ftp" % "2.4.0" % "compile"
   val camelMina= "org.apache.camel" % "camel-mina" % "2.4.0" % "compile"
   val camelJetty= "org.apache.camel" % "camel-jetty" % "2.4.0" % "compile"
