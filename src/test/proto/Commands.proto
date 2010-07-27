@@ -1,0 +1,7 @@
+package unit.test.proto;
+
+message WorkerCommand {
+required uint64 id = 1;
+required string name = 2;
+required string data = 3;
+}
