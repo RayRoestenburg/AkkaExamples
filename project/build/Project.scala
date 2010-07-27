@@ -1,7 +1,7 @@
 import sbt._
 import Process._
-
-class Project(info: ProjectInfo) extends DefaultWebProject(info) with AkkaProject {
+import sbt_akka_bivy._
+class Project(info: ProjectInfo) extends DefaultProject(info) with AkkaProject with AkkaKernelDeployment{
   val akkaCamel = akkaModule("camel")
   val akkaKernel = akkaModule("kernel")
   val junit = "junit" % "junit" % "4.8.1" % "test->default"
