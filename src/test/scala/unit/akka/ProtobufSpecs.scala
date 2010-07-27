@@ -13,7 +13,6 @@ import unit.test.proto.Commands.WorkerCommand
 import unit.akka.CommandBuilder._
 
 /**
- * TODO Rename tests to Specs, add akka.conf, and usage of bivy sack, and idempotent receiver 
  * Test to check if communicating with protobuf serialized messages works.
  */
 @RunWith(classOf[JUnitRunner])
