@@ -1,0 +1,19 @@
+package eip.idempotent;
+
+message EnvelopeProtocol {
+  required int64 id = 1;
+  required int64 timestamp = 2;
+  required SenderProtocol sender = 3;
+  optional PayloadProtocol payload = 4;
+}
+
+message SenderProtocol {
+  required string host = 1;
+  required int32 port = 2;
+  required string actor = 3;
+}
+
+message PayloadProtocol {
+  required bytes message = 1;
+  optional bytes messageManifest = 2;
+}

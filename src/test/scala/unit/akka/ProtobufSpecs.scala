@@ -8,7 +8,6 @@ import org.scalatest.junit.JUnitRunner
 import se.scalablesolutions.akka.remote.{RemoteClient, RemoteServer}
 import org.scalatest.matchers.{MustMatchers, ShouldMatchers}
 import unit.test.proto.Commands
-import com.google.protobuf.Message
 import unit.test.proto.Commands.WorkerCommand
 import unit.akka.CommandBuilder._
 

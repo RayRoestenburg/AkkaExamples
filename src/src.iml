@@ -23,6 +23,7 @@
       <sourceFolder url="file://$MODULE_DIR$/main/scala" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/scala" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/main/java" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="scala 2.8.0" level="project" />
@@ -33,7 +34,9 @@
           <root url="file://$MODULE_DIR$/../lib_managed/scala_2.8.0/test" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../sources/akka/akka-core/src/main/scala" />
+        </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/../lib_managed/scala_2.8.0/compile" recursive="false" />
         <jarDirectory url="file://$MODULE_DIR$/../lib_managed/scala_2.8.0/test" recursive="false" />
       </library>
