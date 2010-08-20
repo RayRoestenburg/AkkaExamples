@@ -167,7 +167,6 @@ class IdempotentSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll wi
         RemoteClient.shutdownClientFor(new InetSocketAddress(host, port))
       }
     }
-
   }
 
   def Worker(id: Int, name: String, data: String): WorkerCommand = {
