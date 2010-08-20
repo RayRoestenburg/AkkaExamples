@@ -29,7 +29,7 @@ object Repeater {
     val repeaterActor = actorOf(new Repeater(Set(actorRef)))
     repeaterActor.start
     server.register("repeater", repeaterActor)
-    client.registerListener(repeaterActor)
+    client.addListener(repeaterActor)
     repeaterActor
   }
 

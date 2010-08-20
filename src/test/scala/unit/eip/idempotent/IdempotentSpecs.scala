@@ -79,7 +79,7 @@ class IdempotentSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll wi
         val repeater = actorOf(new Repeater(Set(idempotentReceiverRef)))
         repeater.start
         sendingServer.register("repeater", repeater)
-        client.registerListener(repeater)
+        client.addListener(repeater)
         val reply = idempotentReceiverRef !! trackedMessage
         reply match {
           case None => fail
@@ -90,7 +90,7 @@ class IdempotentSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll wi
           case None => fail
           case Some(response: CountResponse) => response.count should equal(0)
         }
-        client.deregisterListener(repeater)
+        client.removeListener(repeater)
       } finally {
         RemoteClient.shutdownClientFor(new InetSocketAddress(host, port))
       }
@@ -116,7 +116,7 @@ class IdempotentSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll wi
         repeater.start
         sendingServer.register("repeater", repeater)
 
-        client.registerListener(repeater)
+        client.addListener(repeater)
         idempotentReceiverRef ! trackedMessage
         barrier.await(5, TimeUnit.SECONDS)
 
@@ -125,7 +125,7 @@ class IdempotentSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll wi
           case None => fail
           case Some(response: CountResponse) => response.count should equal(1)
         }
-        client.deregisterListener(repeater)
+        client.removeListener(repeater)
       } finally {
         RemoteClient.shutdownClientFor(new InetSocketAddress(host, port))
       }

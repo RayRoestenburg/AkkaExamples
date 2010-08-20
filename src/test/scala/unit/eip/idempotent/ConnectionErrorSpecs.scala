@@ -20,24 +20,29 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
   val proxy = new NetworkProxy("localhost", 18000, 18095)
   val barrier = new CyclicBarrier(2)
   var actorRef: ActorRef = null
-  var connectionListener: ActorRef = null
+  var serverListener: ActorRef = null
+  var clientListener: ActorRef = null
   val client: RemoteClient = null
 
   override def beforeAll(configMap: Map[String, Any]) {
+    serverListener = actorOf(new ConnectionListenerActor())
+    serverListener.start
+    server.addListener(serverListener)
     server.start("localhost", 18095)
     proxy.start
     server.register("test", actorOf(new ConnTestActor(barrier)))
     actorRef = RemoteClient.actorFor("test", "localhost", 18000)
     val client = RemoteClient.clientFor("localhost", 18000)
-    connectionListener = actorOf(new ConnectionListenerActor())
-    connectionListener.start
-    client.registerListener(connectionListener);
+    clientListener = actorOf(new ConnectionListenerActor())
+    clientListener.start
+    client.addListener(clientListener);
   }
 
   override def afterAll(configMap: Map[String, Any]) {
     try {
-      connectionListener.stop
-      server.shutdown
+      if(server.isRunning){
+        server.shutdown
+      }
     } catch {
       case e => ()
     } finally {
@@ -65,12 +70,19 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
       proxy.stop
     }
     it("should notify the connection listener of events on the client connection") {
-      var reply: Option[Any] = connectionListener !!  new CountOneWayRequests("connect")
+      var reply: Option[Any] = clientListener !!  new CountOneWayRequests("client-connect")
       assertAtLeastOneReply(reply)
-      reply= connectionListener !!  new CountOneWayRequests("disconnect")
+      reply= clientListener !!  new CountOneWayRequests("client-disconnect")
       assertAtLeastOneReply(reply)
-//      reply= connectionListener !!  new CountOneWayRequests("error")
-//      assertAtLeastOneReply(reply)
+      reply= serverListener !!  new CountOneWayRequests("server-started")
+      assertAtLeastOneReply(reply)
+      //reply= clientListener !!  new CountOneWayRequests("client-error")
+      //assertAtLeastOneReply(reply)
+      //reply= serverListener !!  new CountOneWayRequests("server-error")
+      //assertAtLeastOneReply(reply)
+      server.shutdown
+      reply= serverListener !!  new CountOneWayRequests("server-shutdown")
+      assertAtLeastOneReply(reply)
     }
   }
 
@@ -148,15 +160,27 @@ class ConnectionListenerActor extends Actor {
   def receive = {
     case RemoteClientError(cause, hostname, port) => {
       log.info("listener: client error on %s:%s", hostname, port)
-      countEvent("error")
+      countEvent("client-error")
     }
     case RemoteClientDisconnected(hostname, port) => {
       log.info("listener: client disconnect on %s:%s", hostname, port)
-      countEvent("disconnect")
+      countEvent("client-disconnect")
     }
     case RemoteClientConnected(hostname, port) => {
       log.info("listener: client connect on %s:%s", hostname, port)
-      countEvent("connect")
+      countEvent("client-connect")
+    }
+    case RemoteServerError(cause, hostname, port) => {
+      log.info("listener: server error on %s:%s", hostname, port)
+      countEvent("server-error")
+    }
+    case RemoteServerShutdown(hostname, port) => {
+      log.info("listener: server shutdown on %s:%s", hostname, port)
+      countEvent("server-shutdown")
+    }
+    case RemoteServerStarted(hostname, port) => {
+      log.info("listener: server started on %s:%s", hostname, port)
+      countEvent("server-started")
     }
     case msg: CountOneWayRequests => {
       self.reply(new CountOneWayResponse(map(msg.data)))
