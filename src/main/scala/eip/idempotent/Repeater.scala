@@ -94,16 +94,16 @@ class Repeater(actors: Set[ActorRef]) extends Actor {
   var repeat = false
   // keep a ref to the last X messages
   def receive = {
-    case RemoteClientError(cause, hostname, port) => {
+    case RemoteClientError(cause, client) => {
       log.info("LOOP:LISTEN Remote client error")
       repeat = true
     }
-    case RemoteClientDisconnected(hostname, port) => {
+    case RemoteClientDisconnected(client) => {
       log.info("LOOP:LISTEN Remote client disconnected")
       // set state to start repeating at Connected
       repeat = true
     }
-    case RemoteClientConnected(hostname, port) => {
+    case RemoteClientConnected(client) => {
       log.info("LOOP:LISTEN Remote client connected, start repeating")
       // start repeating  if connected after disconnected, or connected after remote client error
       if (repeat) {

@@ -15,4 +15,17 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with AkkaProject w
   override def repositories = Set( "scala-tools-snapshots" at 
       "http://scala-tools.org/repo-snapshots/"
   )
+  // dont include integration and performance tests by default.
+  override def includeTest(s: String) = {!s.contains("integration.") && !s.contains("performance.")}
+
+  lazy val integrationTest = 
+    defaultTestTask(TestListeners(testListeners) ::
+		TestFilter(s => s.contains("integration.")) ::
+		Nil)
+
+  lazy val performanceTest = 
+    defaultTestTask(TestListeners(testListeners) ::
+		TestFilter(s => s.contains("performance.")) ::
+		Nil)
+
 }

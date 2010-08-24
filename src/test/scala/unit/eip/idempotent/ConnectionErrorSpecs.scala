@@ -158,29 +158,38 @@ class ConnectionListenerActor extends Actor {
   }
 
   def receive = {
-    case RemoteClientError(cause, hostname, port) => {
-      log.info("listener: client error on %s:%s", hostname, port)
+    case RemoteClientError(cause, client:RemoteClient) => {
+      log.info("listener: client error on %s:%s", client.hostname, client.port)
       countEvent("client-error")
     }
-    case RemoteClientDisconnected(hostname, port) => {
-      log.info("listener: client disconnect on %s:%s", hostname, port)
+    case RemoteClientDisconnected(client:RemoteClient) => {
+      log.info("listener: client disconnect on %s:%s", client.hostname, client.port)
       countEvent("client-disconnect")
     }
-    case RemoteClientConnected(hostname, port) => {
-      log.info("listener: client connect on %s:%s", hostname, port)
+    case RemoteClientConnected(client:RemoteClient) => {
+      log.info("listener: client connect on %s:%s", client.hostname, client.port)
       countEvent("client-connect")
     }
-    case RemoteServerError(cause, hostname, port) => {
-      log.info("listener: server error on %s:%s", hostname, port)
+    case RemoteServerError(cause, server:RemoteServer) => {
+      log.info("listener: server error.")
       countEvent("server-error")
     }
-    case RemoteServerShutdown(hostname, port) => {
-      log.info("listener: server shutdown on %s:%s", hostname, port)
+    case RemoteServerShutdown(server) => {
+      log.info("listener: server shutdown.")
       countEvent("server-shutdown")
     }
-    case RemoteServerStarted(hostname, port) => {
-      log.info("listener: server started on %s:%s", hostname, port)
+    case RemoteServerStarted(server) => {
+      log.info("listener: server started.")
       countEvent("server-started")
+    }
+    case RemoteServerClientConnected => {
+      log.info("listener: client connected to server.")
+      countEvent("server-client-connected")
+
+    }
+    case RemoteServerClientDisconnected => {
+      log.info("listener: client disconnected from server.")
+      countEvent("server-client-disconnected")
     }
     case msg: CountOneWayRequests => {
       self.reply(new CountOneWayResponse(map(msg.data)))
