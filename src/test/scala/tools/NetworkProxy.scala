@@ -1,8 +1,5 @@
 package tools
 
-
-import net.lag.logging.Logger
-import java.util.concurrent.BrokenBarrierException
 import java.util.concurrent.CyclicBarrier
 import se.scalablesolutions.akka.util.Logging
 import java.io._
@@ -12,10 +9,11 @@ import java.net.{SocketException, ServerSocket, Socket}
 /**
  * A very simple (Blocking I/O) Network Proxy that will be used to simulate network errors.
  * The proxy sits between the remote actors. The proxy can be stopped and started
- * (blocking methods on a barrier for ease of use in testing),
+ * (blocking methods on a barrier for ease of use in testing, so that you are sure its started or stopped),
  * to simulate network disconnects.
- * Buffers the requests and responses.
- * TODO add request listener, response listener
+ * TODO Buffer the requests and responses, add request listeners, response listeners to inspect streams
+ * TODO add networkSpeed =  (Client, Server)
+ * TODO add clientNetworkError, serverNetworkError (Timeout, SocketClosed, etc)
  */
 
 class NetworkProxy extends Logging {
