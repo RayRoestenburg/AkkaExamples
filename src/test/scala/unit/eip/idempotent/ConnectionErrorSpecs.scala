@@ -76,12 +76,21 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
       assertAtLeastOneReply(reply)
       reply= serverListener !!  new CountOneWayRequests("server-started")
       assertAtLeastOneReply(reply)
+      reply= serverListener !!  new CountOneWayRequests("server-client-disconnected")
+       RemoteClient.clientFor("localhost", 18000)
+      assertAtLeastOneReply(reply)
+      reply= serverListener !!  new CountOneWayRequests("server-client-connected")
+      assertAtLeastOneReply(reply)
+      //TODO make sure the errors are happening, not by accident.
       //reply= clientListener !!  new CountOneWayRequests("client-error")
       //assertAtLeastOneReply(reply)
       //reply= serverListener !!  new CountOneWayRequests("server-error")
       //assertAtLeastOneReply(reply)
       server.shutdown
       reply= serverListener !!  new CountOneWayRequests("server-shutdown")
+      assertAtLeastOneReply(reply)
+      client.shutdown
+      reply= clientListener !!  new CountOneWayRequests("client-shutdown")
       assertAtLeastOneReply(reply)
     }
   }
