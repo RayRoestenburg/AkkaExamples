@@ -174,6 +174,10 @@ class ConnectionListenerActor extends Actor {
       log.info("listener: server error.")
       countEvent("server-error")
     }
+    case RemoteClientShutdown(client) => {
+      log.info("listener: client shutdown.")
+      countEvent("client-shutdown")
+    }
     case RemoteServerShutdown(server) => {
       log.info("listener: server shutdown.")
       countEvent("server-shutdown")
@@ -182,12 +186,12 @@ class ConnectionListenerActor extends Actor {
       log.info("listener: server started.")
       countEvent("server-started")
     }
-    case RemoteServerClientConnected => {
+    case RemoteServerClientConnected(server) => {
       log.info("listener: client connected to server.")
       countEvent("server-client-connected")
 
     }
-    case RemoteServerClientDisconnected => {
+    case RemoteServerClientDisconnected(server) => {
       log.info("listener: client disconnected from server.")
       countEvent("server-client-disconnected")
     }
