@@ -8,7 +8,7 @@ import java.net.{SocketException, ServerSocket, Socket}
 
 /**
  * A very simple (Blocking I/O) Network Proxy that will be used to simulate network errors.
- * The proxy sits between the remote actors. The proxy can be stopped and started
+ * The proxy sits between the remote actors (between "client" and "server"). The proxy can be stopped and started
  * (blocking methods on a barrier for ease of use in testing, so that you are sure its started or stopped),
  * to simulate network disconnects.
  */
@@ -50,6 +50,15 @@ class NetworkProxy extends Logging {
       started = true
     }
   }
+  def injectClientFunction(func: (Socket, Socket, InputStream, OutputStream) => Unit ) : Unit = {
+     proxyRunnable.injectClientFunction(func)
+  }
+  def injectServerFunction(func: (Socket, Socket, InputStream, OutputStream) => Unit) : Unit = {
+    proxyRunnable.injectServerFunction(func)
+  }
+  def clearInjectedFunctions : Unit = {
+    proxyRunnable.clearInjectedFunctions
+  }
 }
 
 
@@ -64,7 +73,9 @@ class ProxyRunnable extends Runnable with Logging {
   private var remotePort = 8001
   private val stopBarrier = new CyclicBarrier(2)
   private val startBarrier = new CyclicBarrier(2)
-
+  private val emptyFunction: (Socket, Socket, InputStream, OutputStream) => Unit  =  (_,_,_,_) => ();
+  private var clientFunction: (Socket, Socket, InputStream, OutputStream) => Unit = emptyFunction
+  private var serverFunction: (Socket, Socket, InputStream, OutputStream) => Unit = emptyFunction
   private[tools] def this(host: String, localPort: Int, remotePort: Int) {
     this ()
     this.host = host
@@ -102,7 +113,17 @@ class ProxyRunnable extends Runnable with Logging {
       }
     }
   }
+  def injectServerFunction(errorThrowingFunction: (Socket, Socket, InputStream, OutputStream) => Unit) :Unit = {
+    serverFunction = errorThrowingFunction
+  }
+  def injectClientFunction(errorThrowingFunction: (Socket, Socket, InputStream, OutputStream) => Unit) :Unit = {
+    clientFunction = errorThrowingFunction
+  }
 
+  def clearInjectedFunctions : Unit = {
+    clientFunction = emptyFunction
+    serverFunction = emptyFunction
+  }
   def connectClientToRemoteServer(client: Socket): (Socket, InputStream, OutputStream, InputStream, OutputStream) = {
     try {
       val streamFromClient: InputStream = client.getInputStream
@@ -135,6 +156,7 @@ class ProxyRunnable extends Runnable with Logging {
           bytesRead = streamFromClient.read(request);
           bytesRead
         })) != -1) {
+          clientFunction(client, server, streamFromClient, streamToServer)
           if (!first) {
             if (new String(request).startsWith("<<END-PROXY>>")) {
               log.info("received stop signal in proxy, now stopping proxy.")
@@ -169,6 +191,7 @@ class ProxyRunnable extends Runnable with Logging {
           bytesRead = streamFromServer.read(reply);
           bytesRead
         })) != -1) {
+          serverFunction(client, server, streamFromServer, streamToClient)
           log.info("in loop reading from remote server, writing back to client")
           streamToClient.write(reply, 0, bytesRead)
           streamToClient.flush
