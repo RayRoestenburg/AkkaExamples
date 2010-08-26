@@ -8,10 +8,9 @@ import se.scalablesolutions.akka.actor.Actor._
 import collection.mutable.HashMap
 import java.util.concurrent.{TimeUnit, CyclicBarrier}
 import se.scalablesolutions.akka.actor.{ActorRef, Actor}
-import scala.actors
 import se.scalablesolutions.akka.remote._
 import java.net.Socket
-import java.io.{IOException, InputStream, OutputStream}
+import java.io.{InputStream, OutputStream}
 
 /**
  * Test what happens in case of Connection Errors, using a simple Network Proxy that is used to disconnect 'the network'
