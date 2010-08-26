@@ -100,6 +100,7 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
         out.close
       }
       def serverServerProblem(client: Socket, server: Socket, in: InputStream, out: OutputStream): Unit = {
+        // cause some more problems
         in.close()
         out.close()
       }
