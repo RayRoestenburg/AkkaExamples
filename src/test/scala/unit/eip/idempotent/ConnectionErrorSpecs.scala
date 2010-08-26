@@ -22,7 +22,7 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
   var actorRef: ActorRef = null
   var serverListener: ActorRef = null
   var clientListener: ActorRef = null
-  val client: RemoteClient = null
+  var client: RemoteClient = null
 
   override def beforeAll(configMap: Map[String, Any]) {
     serverListener = actorOf(new ConnectionListenerActor())
@@ -32,7 +32,7 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
     proxy.start
     server.register("test", actorOf(new ConnTestActor(barrier)))
     actorRef = RemoteClient.actorFor("test", "localhost", 18000)
-    val client = RemoteClient.clientFor("localhost", 18000)
+    client = RemoteClient.clientFor("localhost", 18000)
     clientListener = actorOf(new ConnectionListenerActor())
     clientListener.start
     client.addListener(clientListener);
@@ -205,7 +205,7 @@ class ConnectionListenerActor extends Actor {
       countEvent("server-client-disconnected")
     }
     case msg: CountOneWayRequests => {
-      self.reply(new CountOneWayResponse(map(msg.data)))
+      self.reply(new CountOneWayResponse(map.getOrElse(msg.data,0)))
     }
   }
 }

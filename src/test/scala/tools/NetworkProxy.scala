@@ -11,12 +11,12 @@ import java.net.{SocketException, ServerSocket, Socket}
  * The proxy sits between the remote actors. The proxy can be stopped and started
  * (blocking methods on a barrier for ease of use in testing, so that you are sure its started or stopped),
  * to simulate network disconnects.
- * TODO Buffer the requests and responses, add request listeners, response listeners to inspect streams
- * TODO add networkSpeed =  (Client, Server)
- * TODO add clientNetworkError, serverNetworkError (Timeout, SocketClosed, etc)
  */
 
 class NetworkProxy extends Logging {
+  //TODO Buffer the requests and responses, add request listeners, response listeners to inspect streams
+  //TODO add networkSpeed =  (Client, Server)
+  //TODO add clientNetworkError, serverNetworkError (Timeout, SocketClosed, etc)
   private var localPort: Int = 18001
   private var proxyRunnable: ProxyRunnable = null
   private var host: String = "localhost"
