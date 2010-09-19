@@ -199,6 +199,7 @@ class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAf
         repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
         barrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
         assertReply(localActorRef, 20)
+        Thread.sleep(3000)
         // should now be complete
         var frames = repeatBuffer.getFrames("localhost", 18000)
         frames should have size (0)
