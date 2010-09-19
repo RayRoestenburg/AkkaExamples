@@ -35,43 +35,33 @@ public final class IdempotentProtocol {
       return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_EnvelopeProtocol_fieldAccessorTable;
     }
     
-    // required int64 id = 1;
+    // required int32 id = 1;
     public static final int ID_FIELD_NUMBER = 1;
     private boolean hasId;
-    private long id_ = 0L;
+    private int id_ = 0;
     public boolean hasId() { return hasId; }
-    public long getId() { return id_; }
+    public int getId() { return id_; }
     
-    // required int64 timestamp = 2;
-    public static final int TIMESTAMP_FIELD_NUMBER = 2;
-    private boolean hasTimestamp;
-    private long timestamp_ = 0L;
-    public boolean hasTimestamp() { return hasTimestamp; }
-    public long getTimestamp() { return timestamp_; }
+    // required int32 frameId = 2;
+    public static final int FRAMEID_FIELD_NUMBER = 2;
+    private boolean hasFrameId;
+    private int frameId_ = 0;
+    public boolean hasFrameId() { return hasFrameId; }
+    public int getFrameId() { return frameId_; }
     
-    // required .eip.idempotent.SenderProtocol sender = 3;
-    public static final int SENDER_FIELD_NUMBER = 3;
-    private boolean hasSender;
-    private eip.idempotent.IdempotentProtocol.SenderProtocol sender_;
-    public boolean hasSender() { return hasSender; }
-    public eip.idempotent.IdempotentProtocol.SenderProtocol getSender() { return sender_; }
-    
-    // optional .eip.idempotent.PayloadProtocol payload = 4;
-    public static final int PAYLOAD_FIELD_NUMBER = 4;
+    // optional .eip.idempotent.PayloadProtocol payload = 3;
+    public static final int PAYLOAD_FIELD_NUMBER = 3;
     private boolean hasPayload;
     private eip.idempotent.IdempotentProtocol.PayloadProtocol payload_;
     public boolean hasPayload() { return hasPayload; }
     public eip.idempotent.IdempotentProtocol.PayloadProtocol getPayload() { return payload_; }
     
     private void initFields() {
-      sender_ = eip.idempotent.IdempotentProtocol.SenderProtocol.getDefaultInstance();
       payload_ = eip.idempotent.IdempotentProtocol.PayloadProtocol.getDefaultInstance();
     }
     public final boolean isInitialized() {
       if (!hasId) return false;
-      if (!hasTimestamp) return false;
-      if (!hasSender) return false;
-      if (!getSender().isInitialized()) return false;
+      if (!hasFrameId) return false;
       if (hasPayload()) {
         if (!getPayload().isInitialized()) return false;
       }
@@ -82,16 +72,13 @@ public final class IdempotentProtocol {
                         throws java.io.IOException {
       getSerializedSize();
       if (hasId()) {
-        output.writeInt64(1, getId());
+        output.writeInt32(1, getId());
       }
-      if (hasTimestamp()) {
-        output.writeInt64(2, getTimestamp());
-      }
-      if (hasSender()) {
-        output.writeMessage(3, getSender());
+      if (hasFrameId()) {
+        output.writeInt32(2, getFrameId());
       }
       if (hasPayload()) {
-        output.writeMessage(4, getPayload());
+        output.writeMessage(3, getPayload());
       }
       getUnknownFields().writeTo(output);
     }
@@ -104,19 +91,15 @@ public final class IdempotentProtocol {
       size = 0;
       if (hasId()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(1, getId());
+          .computeInt32Size(1, getId());
       }
-      if (hasTimestamp()) {
+      if (hasFrameId()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, getTimestamp());
-      }
-      if (hasSender()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, getSender());
+          .computeInt32Size(2, getFrameId());
       }
       if (hasPayload()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, getPayload());
+          .computeMessageSize(3, getPayload());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -279,11 +262,8 @@ public final class IdempotentProtocol {
         if (other.hasId()) {
           setId(other.getId());
         }
-        if (other.hasTimestamp()) {
-          setTimestamp(other.getTimestamp());
-        }
-        if (other.hasSender()) {
-          mergeSender(other.getSender());
+        if (other.hasFrameId()) {
+          setFrameId(other.getFrameId());
         }
         if (other.hasPayload()) {
           mergePayload(other.getPayload());
@@ -314,23 +294,14 @@ public final class IdempotentProtocol {
               break;
             }
             case 8: {
-              setId(input.readInt64());
+              setId(input.readInt32());
               break;
             }
             case 16: {
-              setTimestamp(input.readInt64());
+              setFrameId(input.readInt32());
               break;
             }
             case 26: {
-              eip.idempotent.IdempotentProtocol.SenderProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.SenderProtocol.newBuilder();
-              if (hasSender()) {
-                subBuilder.mergeFrom(getSender());
-              }
-              input.readMessage(subBuilder, extensionRegistry);
-              setSender(subBuilder.buildPartial());
-              break;
-            }
-            case 34: {
               eip.idempotent.IdempotentProtocol.PayloadProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.PayloadProtocol.newBuilder();
               if (hasPayload()) {
                 subBuilder.mergeFrom(getPayload());
@@ -344,80 +315,43 @@ public final class IdempotentProtocol {
       }
       
       
-      // required int64 id = 1;
+      // required int32 id = 1;
       public boolean hasId() {
         return result.hasId();
       }
-      public long getId() {
+      public int getId() {
         return result.getId();
       }
-      public Builder setId(long value) {
+      public Builder setId(int value) {
         result.hasId = true;
         result.id_ = value;
         return this;
       }
       public Builder clearId() {
         result.hasId = false;
-        result.id_ = 0L;
+        result.id_ = 0;
         return this;
       }
       
-      // required int64 timestamp = 2;
-      public boolean hasTimestamp() {
-        return result.hasTimestamp();
+      // required int32 frameId = 2;
+      public boolean hasFrameId() {
+        return result.hasFrameId();
       }
-      public long getTimestamp() {
-        return result.getTimestamp();
+      public int getFrameId() {
+        return result.getFrameId();
       }
-      public Builder setTimestamp(long value) {
-        result.hasTimestamp = true;
-        result.timestamp_ = value;
+      public Builder setFrameId(int value) {
+        result.hasFrameId = true;
+        result.frameId_ = value;
         return this;
       }
-      public Builder clearTimestamp() {
-        result.hasTimestamp = false;
-        result.timestamp_ = 0L;
-        return this;
-      }
-      
-      // required .eip.idempotent.SenderProtocol sender = 3;
-      public boolean hasSender() {
-        return result.hasSender();
-      }
-      public eip.idempotent.IdempotentProtocol.SenderProtocol getSender() {
-        return result.getSender();
-      }
-      public Builder setSender(eip.idempotent.IdempotentProtocol.SenderProtocol value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        result.hasSender = true;
-        result.sender_ = value;
-        return this;
-      }
-      public Builder setSender(eip.idempotent.IdempotentProtocol.SenderProtocol.Builder builderForValue) {
-        result.hasSender = true;
-        result.sender_ = builderForValue.build();
-        return this;
-      }
-      public Builder mergeSender(eip.idempotent.IdempotentProtocol.SenderProtocol value) {
-        if (result.hasSender() &&
-            result.sender_ != eip.idempotent.IdempotentProtocol.SenderProtocol.getDefaultInstance()) {
-          result.sender_ =
-            eip.idempotent.IdempotentProtocol.SenderProtocol.newBuilder(result.sender_).mergeFrom(value).buildPartial();
-        } else {
-          result.sender_ = value;
-        }
-        result.hasSender = true;
-        return this;
-      }
-      public Builder clearSender() {
-        result.hasSender = false;
-        result.sender_ = eip.idempotent.IdempotentProtocol.SenderProtocol.getDefaultInstance();
+      public Builder clearFrameId() {
+        result.hasFrameId = false;
+        result.frameId_ = 0;
         return this;
       }
       
-      // optional .eip.idempotent.PayloadProtocol payload = 4;
+      // optional .eip.idempotent.PayloadProtocol payload = 3;
       public boolean hasPayload() {
         return result.hasPayload();
       }
@@ -466,31 +400,527 @@ public final class IdempotentProtocol {
     // @@protoc_insertion_point(class_scope:eip.idempotent.EnvelopeProtocol)
   }
   
-  public static final class SenderProtocol extends
+  public static final class FrameProtocol extends
       com.google.protobuf.GeneratedMessage {
-    // Use SenderProtocol.newBuilder() to construct.
-    private SenderProtocol() {
+    // Use FrameProtocol.newBuilder() to construct.
+    private FrameProtocol() {
       initFields();
     }
-    private SenderProtocol(boolean noInit) {}
+    private FrameProtocol(boolean noInit) {}
     
-    private static final SenderProtocol defaultInstance;
-    public static SenderProtocol getDefaultInstance() {
+    private static final FrameProtocol defaultInstance;
+    public static FrameProtocol getDefaultInstance() {
       return defaultInstance;
     }
     
-    public SenderProtocol getDefaultInstanceForType() {
+    public FrameProtocol getDefaultInstanceForType() {
       return defaultInstance;
     }
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_SenderProtocol_descriptor;
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_FrameProtocol_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_SenderProtocol_fieldAccessorTable;
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_FrameProtocol_fieldAccessorTable;
+    }
+    
+    // required int32 id = 1;
+    public static final int ID_FIELD_NUMBER = 1;
+    private boolean hasId;
+    private int id_ = 0;
+    public boolean hasId() { return hasId; }
+    public int getId() { return id_; }
+    
+    // required int32 size = 2;
+    public static final int SIZE_FIELD_NUMBER = 2;
+    private boolean hasSize;
+    private int size_ = 0;
+    public boolean hasSize() { return hasSize; }
+    public int getSize() { return size_; }
+    
+    // required .eip.idempotent.AddressProtocol returnAddress = 3;
+    public static final int RETURNADDRESS_FIELD_NUMBER = 3;
+    private boolean hasReturnAddress;
+    private eip.idempotent.IdempotentProtocol.AddressProtocol returnAddress_;
+    public boolean hasReturnAddress() { return hasReturnAddress; }
+    public eip.idempotent.IdempotentProtocol.AddressProtocol getReturnAddress() { return returnAddress_; }
+    
+    // required .eip.idempotent.AddressProtocol address = 4;
+    public static final int ADDRESS_FIELD_NUMBER = 4;
+    private boolean hasAddress;
+    private eip.idempotent.IdempotentProtocol.AddressProtocol address_;
+    public boolean hasAddress() { return hasAddress; }
+    public eip.idempotent.IdempotentProtocol.AddressProtocol getAddress() { return address_; }
+    
+    // optional int32 count = 5;
+    public static final int COUNT_FIELD_NUMBER = 5;
+    private boolean hasCount;
+    private int count_ = 0;
+    public boolean hasCount() { return hasCount; }
+    public int getCount() { return count_; }
+    
+    private void initFields() {
+      returnAddress_ = eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance();
+      address_ = eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance();
+    }
+    public final boolean isInitialized() {
+      if (!hasId) return false;
+      if (!hasSize) return false;
+      if (!hasReturnAddress) return false;
+      if (!hasAddress) return false;
+      if (!getReturnAddress().isInitialized()) return false;
+      if (!getAddress().isInitialized()) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasId()) {
+        output.writeInt32(1, getId());
+      }
+      if (hasSize()) {
+        output.writeInt32(2, getSize());
+      }
+      if (hasReturnAddress()) {
+        output.writeMessage(3, getReturnAddress());
+      }
+      if (hasAddress()) {
+        output.writeMessage(4, getAddress());
+      }
+      if (hasCount()) {
+        output.writeInt32(5, getCount());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasId()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, getId());
+      }
+      if (hasSize()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, getSize());
+      }
+      if (hasReturnAddress()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, getReturnAddress());
+      }
+      if (hasAddress()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, getAddress());
+      }
+      if (hasCount()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, getCount());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(eip.idempotent.IdempotentProtocol.FrameProtocol prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private eip.idempotent.IdempotentProtocol.FrameProtocol result;
+      
+      // Construct using eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new eip.idempotent.IdempotentProtocol.FrameProtocol();
+        return builder;
+      }
+      
+      protected eip.idempotent.IdempotentProtocol.FrameProtocol internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new eip.idempotent.IdempotentProtocol.FrameProtocol();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return eip.idempotent.IdempotentProtocol.FrameProtocol.getDescriptor();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.FrameProtocol getDefaultInstanceForType() {
+        return eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public eip.idempotent.IdempotentProtocol.FrameProtocol build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private eip.idempotent.IdempotentProtocol.FrameProtocol buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.FrameProtocol buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        eip.idempotent.IdempotentProtocol.FrameProtocol returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof eip.idempotent.IdempotentProtocol.FrameProtocol) {
+          return mergeFrom((eip.idempotent.IdempotentProtocol.FrameProtocol)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(eip.idempotent.IdempotentProtocol.FrameProtocol other) {
+        if (other == eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance()) return this;
+        if (other.hasId()) {
+          setId(other.getId());
+        }
+        if (other.hasSize()) {
+          setSize(other.getSize());
+        }
+        if (other.hasReturnAddress()) {
+          mergeReturnAddress(other.getReturnAddress());
+        }
+        if (other.hasAddress()) {
+          mergeAddress(other.getAddress());
+        }
+        if (other.hasCount()) {
+          setCount(other.getCount());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 8: {
+              setId(input.readInt32());
+              break;
+            }
+            case 16: {
+              setSize(input.readInt32());
+              break;
+            }
+            case 26: {
+              eip.idempotent.IdempotentProtocol.AddressProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.AddressProtocol.newBuilder();
+              if (hasReturnAddress()) {
+                subBuilder.mergeFrom(getReturnAddress());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setReturnAddress(subBuilder.buildPartial());
+              break;
+            }
+            case 34: {
+              eip.idempotent.IdempotentProtocol.AddressProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.AddressProtocol.newBuilder();
+              if (hasAddress()) {
+                subBuilder.mergeFrom(getAddress());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setAddress(subBuilder.buildPartial());
+              break;
+            }
+            case 40: {
+              setCount(input.readInt32());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required int32 id = 1;
+      public boolean hasId() {
+        return result.hasId();
+      }
+      public int getId() {
+        return result.getId();
+      }
+      public Builder setId(int value) {
+        result.hasId = true;
+        result.id_ = value;
+        return this;
+      }
+      public Builder clearId() {
+        result.hasId = false;
+        result.id_ = 0;
+        return this;
+      }
+      
+      // required int32 size = 2;
+      public boolean hasSize() {
+        return result.hasSize();
+      }
+      public int getSize() {
+        return result.getSize();
+      }
+      public Builder setSize(int value) {
+        result.hasSize = true;
+        result.size_ = value;
+        return this;
+      }
+      public Builder clearSize() {
+        result.hasSize = false;
+        result.size_ = 0;
+        return this;
+      }
+      
+      // required .eip.idempotent.AddressProtocol returnAddress = 3;
+      public boolean hasReturnAddress() {
+        return result.hasReturnAddress();
+      }
+      public eip.idempotent.IdempotentProtocol.AddressProtocol getReturnAddress() {
+        return result.getReturnAddress();
+      }
+      public Builder setReturnAddress(eip.idempotent.IdempotentProtocol.AddressProtocol value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasReturnAddress = true;
+        result.returnAddress_ = value;
+        return this;
+      }
+      public Builder setReturnAddress(eip.idempotent.IdempotentProtocol.AddressProtocol.Builder builderForValue) {
+        result.hasReturnAddress = true;
+        result.returnAddress_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeReturnAddress(eip.idempotent.IdempotentProtocol.AddressProtocol value) {
+        if (result.hasReturnAddress() &&
+            result.returnAddress_ != eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance()) {
+          result.returnAddress_ =
+            eip.idempotent.IdempotentProtocol.AddressProtocol.newBuilder(result.returnAddress_).mergeFrom(value).buildPartial();
+        } else {
+          result.returnAddress_ = value;
+        }
+        result.hasReturnAddress = true;
+        return this;
+      }
+      public Builder clearReturnAddress() {
+        result.hasReturnAddress = false;
+        result.returnAddress_ = eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance();
+        return this;
+      }
+      
+      // required .eip.idempotent.AddressProtocol address = 4;
+      public boolean hasAddress() {
+        return result.hasAddress();
+      }
+      public eip.idempotent.IdempotentProtocol.AddressProtocol getAddress() {
+        return result.getAddress();
+      }
+      public Builder setAddress(eip.idempotent.IdempotentProtocol.AddressProtocol value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasAddress = true;
+        result.address_ = value;
+        return this;
+      }
+      public Builder setAddress(eip.idempotent.IdempotentProtocol.AddressProtocol.Builder builderForValue) {
+        result.hasAddress = true;
+        result.address_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeAddress(eip.idempotent.IdempotentProtocol.AddressProtocol value) {
+        if (result.hasAddress() &&
+            result.address_ != eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance()) {
+          result.address_ =
+            eip.idempotent.IdempotentProtocol.AddressProtocol.newBuilder(result.address_).mergeFrom(value).buildPartial();
+        } else {
+          result.address_ = value;
+        }
+        result.hasAddress = true;
+        return this;
+      }
+      public Builder clearAddress() {
+        result.hasAddress = false;
+        result.address_ = eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance();
+        return this;
+      }
+      
+      // optional int32 count = 5;
+      public boolean hasCount() {
+        return result.hasCount();
+      }
+      public int getCount() {
+        return result.getCount();
+      }
+      public Builder setCount(int value) {
+        result.hasCount = true;
+        result.count_ = value;
+        return this;
+      }
+      public Builder clearCount() {
+        result.hasCount = false;
+        result.count_ = 0;
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:eip.idempotent.FrameProtocol)
+    }
+    
+    static {
+      defaultInstance = new FrameProtocol(true);
+      eip.idempotent.IdempotentProtocol.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:eip.idempotent.FrameProtocol)
+  }
+  
+  public static final class AddressProtocol extends
+      com.google.protobuf.GeneratedMessage {
+    // Use AddressProtocol.newBuilder() to construct.
+    private AddressProtocol() {
+      initFields();
+    }
+    private AddressProtocol(boolean noInit) {}
+    
+    private static final AddressProtocol defaultInstance;
+    public static AddressProtocol getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public AddressProtocol getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_AddressProtocol_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_AddressProtocol_fieldAccessorTable;
     }
     
     // required string host = 1;
@@ -561,41 +991,41 @@ public final class IdempotentProtocol {
       return size;
     }
     
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseFrom(
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data).buildParsed();
     }
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseFrom(
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
     }
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseFrom(byte[] data)
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data).buildParsed();
     }
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseFrom(
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
     }
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseFrom(java.io.InputStream input)
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input).buildParsed();
     }
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseFrom(
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
     }
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseDelimitedFrom(java.io.InputStream input)
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       Builder builder = newBuilder();
       if (builder.mergeDelimitedFrom(input)) {
@@ -604,7 +1034,7 @@ public final class IdempotentProtocol {
         return null;
       }
     }
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseDelimitedFrom(
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -615,12 +1045,12 @@ public final class IdempotentProtocol {
         return null;
       }
     }
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseFrom(
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input).buildParsed();
     }
-    public static eip.idempotent.IdempotentProtocol.SenderProtocol parseFrom(
+    public static eip.idempotent.IdempotentProtocol.AddressProtocol parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -630,25 +1060,25 @@ public final class IdempotentProtocol {
     
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(eip.idempotent.IdempotentProtocol.SenderProtocol prototype) {
+    public static Builder newBuilder(eip.idempotent.IdempotentProtocol.AddressProtocol prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
     
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
-      private eip.idempotent.IdempotentProtocol.SenderProtocol result;
+      private eip.idempotent.IdempotentProtocol.AddressProtocol result;
       
-      // Construct using eip.idempotent.IdempotentProtocol.SenderProtocol.newBuilder()
+      // Construct using eip.idempotent.IdempotentProtocol.AddressProtocol.newBuilder()
       private Builder() {}
       
       private static Builder create() {
         Builder builder = new Builder();
-        builder.result = new eip.idempotent.IdempotentProtocol.SenderProtocol();
+        builder.result = new eip.idempotent.IdempotentProtocol.AddressProtocol();
         return builder;
       }
       
-      protected eip.idempotent.IdempotentProtocol.SenderProtocol internalGetResult() {
+      protected eip.idempotent.IdempotentProtocol.AddressProtocol internalGetResult() {
         return result;
       }
       
@@ -657,7 +1087,7 @@ public final class IdempotentProtocol {
           throw new IllegalStateException(
             "Cannot call clear() after build().");
         }
-        result = new eip.idempotent.IdempotentProtocol.SenderProtocol();
+        result = new eip.idempotent.IdempotentProtocol.AddressProtocol();
         return this;
       }
       
@@ -667,24 +1097,24 @@ public final class IdempotentProtocol {
       
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return eip.idempotent.IdempotentProtocol.SenderProtocol.getDescriptor();
+        return eip.idempotent.IdempotentProtocol.AddressProtocol.getDescriptor();
       }
       
-      public eip.idempotent.IdempotentProtocol.SenderProtocol getDefaultInstanceForType() {
-        return eip.idempotent.IdempotentProtocol.SenderProtocol.getDefaultInstance();
+      public eip.idempotent.IdempotentProtocol.AddressProtocol getDefaultInstanceForType() {
+        return eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance();
       }
       
       public boolean isInitialized() {
         return result.isInitialized();
       }
-      public eip.idempotent.IdempotentProtocol.SenderProtocol build() {
+      public eip.idempotent.IdempotentProtocol.AddressProtocol build() {
         if (result != null && !isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return buildPartial();
       }
       
-      private eip.idempotent.IdempotentProtocol.SenderProtocol buildParsed()
+      private eip.idempotent.IdempotentProtocol.AddressProtocol buildParsed()
           throws com.google.protobuf.InvalidProtocolBufferException {
         if (!isInitialized()) {
           throw newUninitializedMessageException(
@@ -693,27 +1123,27 @@ public final class IdempotentProtocol {
         return buildPartial();
       }
       
-      public eip.idempotent.IdempotentProtocol.SenderProtocol buildPartial() {
+      public eip.idempotent.IdempotentProtocol.AddressProtocol buildPartial() {
         if (result == null) {
           throw new IllegalStateException(
             "build() has already been called on this Builder.");
         }
-        eip.idempotent.IdempotentProtocol.SenderProtocol returnMe = result;
+        eip.idempotent.IdempotentProtocol.AddressProtocol returnMe = result;
         result = null;
         return returnMe;
       }
       
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof eip.idempotent.IdempotentProtocol.SenderProtocol) {
-          return mergeFrom((eip.idempotent.IdempotentProtocol.SenderProtocol)other);
+        if (other instanceof eip.idempotent.IdempotentProtocol.AddressProtocol) {
+          return mergeFrom((eip.idempotent.IdempotentProtocol.AddressProtocol)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
       
-      public Builder mergeFrom(eip.idempotent.IdempotentProtocol.SenderProtocol other) {
-        if (other == eip.idempotent.IdempotentProtocol.SenderProtocol.getDefaultInstance()) return this;
+      public Builder mergeFrom(eip.idempotent.IdempotentProtocol.AddressProtocol other) {
+        if (other == eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance()) return this;
         if (other.hasHost()) {
           setHost(other.getHost());
         }
@@ -825,16 +1255,16 @@ public final class IdempotentProtocol {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:eip.idempotent.SenderProtocol)
+      // @@protoc_insertion_point(builder_scope:eip.idempotent.AddressProtocol)
     }
     
     static {
-      defaultInstance = new SenderProtocol(true);
+      defaultInstance = new AddressProtocol(true);
       eip.idempotent.IdempotentProtocol.internalForceInit();
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:eip.idempotent.SenderProtocol)
+    // @@protoc_insertion_point(class_scope:eip.idempotent.AddressProtocol)
   }
   
   public static final class PayloadProtocol extends
@@ -1167,21 +1597,2069 @@ public final class IdempotentProtocol {
     // @@protoc_insertion_point(class_scope:eip.idempotent.PayloadProtocol)
   }
   
+  public static final class FrameRequestProtocol extends
+      com.google.protobuf.GeneratedMessage {
+    // Use FrameRequestProtocol.newBuilder() to construct.
+    private FrameRequestProtocol() {
+      initFields();
+    }
+    private FrameRequestProtocol(boolean noInit) {}
+    
+    private static final FrameRequestProtocol defaultInstance;
+    public static FrameRequestProtocol getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public FrameRequestProtocol getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_FrameRequestProtocol_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_FrameRequestProtocol_fieldAccessorTable;
+    }
+    
+    // required .eip.idempotent.AddressProtocol returnAddress = 1;
+    public static final int RETURNADDRESS_FIELD_NUMBER = 1;
+    private boolean hasReturnAddress;
+    private eip.idempotent.IdempotentProtocol.AddressProtocol returnAddress_;
+    public boolean hasReturnAddress() { return hasReturnAddress; }
+    public eip.idempotent.IdempotentProtocol.AddressProtocol getReturnAddress() { return returnAddress_; }
+    
+    // required .eip.idempotent.AddressProtocol address = 2;
+    public static final int ADDRESS_FIELD_NUMBER = 2;
+    private boolean hasAddress;
+    private eip.idempotent.IdempotentProtocol.AddressProtocol address_;
+    public boolean hasAddress() { return hasAddress; }
+    public eip.idempotent.IdempotentProtocol.AddressProtocol getAddress() { return address_; }
+    
+    private void initFields() {
+      returnAddress_ = eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance();
+      address_ = eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance();
+    }
+    public final boolean isInitialized() {
+      if (!hasReturnAddress) return false;
+      if (!hasAddress) return false;
+      if (!getReturnAddress().isInitialized()) return false;
+      if (!getAddress().isInitialized()) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasReturnAddress()) {
+        output.writeMessage(1, getReturnAddress());
+      }
+      if (hasAddress()) {
+        output.writeMessage(2, getAddress());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasReturnAddress()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getReturnAddress());
+      }
+      if (hasAddress()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getAddress());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameRequestProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(eip.idempotent.IdempotentProtocol.FrameRequestProtocol prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private eip.idempotent.IdempotentProtocol.FrameRequestProtocol result;
+      
+      // Construct using eip.idempotent.IdempotentProtocol.FrameRequestProtocol.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new eip.idempotent.IdempotentProtocol.FrameRequestProtocol();
+        return builder;
+      }
+      
+      protected eip.idempotent.IdempotentProtocol.FrameRequestProtocol internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new eip.idempotent.IdempotentProtocol.FrameRequestProtocol();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return eip.idempotent.IdempotentProtocol.FrameRequestProtocol.getDescriptor();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.FrameRequestProtocol getDefaultInstanceForType() {
+        return eip.idempotent.IdempotentProtocol.FrameRequestProtocol.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public eip.idempotent.IdempotentProtocol.FrameRequestProtocol build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private eip.idempotent.IdempotentProtocol.FrameRequestProtocol buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.FrameRequestProtocol buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        eip.idempotent.IdempotentProtocol.FrameRequestProtocol returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof eip.idempotent.IdempotentProtocol.FrameRequestProtocol) {
+          return mergeFrom((eip.idempotent.IdempotentProtocol.FrameRequestProtocol)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(eip.idempotent.IdempotentProtocol.FrameRequestProtocol other) {
+        if (other == eip.idempotent.IdempotentProtocol.FrameRequestProtocol.getDefaultInstance()) return this;
+        if (other.hasReturnAddress()) {
+          mergeReturnAddress(other.getReturnAddress());
+        }
+        if (other.hasAddress()) {
+          mergeAddress(other.getAddress());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              eip.idempotent.IdempotentProtocol.AddressProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.AddressProtocol.newBuilder();
+              if (hasReturnAddress()) {
+                subBuilder.mergeFrom(getReturnAddress());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setReturnAddress(subBuilder.buildPartial());
+              break;
+            }
+            case 18: {
+              eip.idempotent.IdempotentProtocol.AddressProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.AddressProtocol.newBuilder();
+              if (hasAddress()) {
+                subBuilder.mergeFrom(getAddress());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setAddress(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required .eip.idempotent.AddressProtocol returnAddress = 1;
+      public boolean hasReturnAddress() {
+        return result.hasReturnAddress();
+      }
+      public eip.idempotent.IdempotentProtocol.AddressProtocol getReturnAddress() {
+        return result.getReturnAddress();
+      }
+      public Builder setReturnAddress(eip.idempotent.IdempotentProtocol.AddressProtocol value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasReturnAddress = true;
+        result.returnAddress_ = value;
+        return this;
+      }
+      public Builder setReturnAddress(eip.idempotent.IdempotentProtocol.AddressProtocol.Builder builderForValue) {
+        result.hasReturnAddress = true;
+        result.returnAddress_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeReturnAddress(eip.idempotent.IdempotentProtocol.AddressProtocol value) {
+        if (result.hasReturnAddress() &&
+            result.returnAddress_ != eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance()) {
+          result.returnAddress_ =
+            eip.idempotent.IdempotentProtocol.AddressProtocol.newBuilder(result.returnAddress_).mergeFrom(value).buildPartial();
+        } else {
+          result.returnAddress_ = value;
+        }
+        result.hasReturnAddress = true;
+        return this;
+      }
+      public Builder clearReturnAddress() {
+        result.hasReturnAddress = false;
+        result.returnAddress_ = eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance();
+        return this;
+      }
+      
+      // required .eip.idempotent.AddressProtocol address = 2;
+      public boolean hasAddress() {
+        return result.hasAddress();
+      }
+      public eip.idempotent.IdempotentProtocol.AddressProtocol getAddress() {
+        return result.getAddress();
+      }
+      public Builder setAddress(eip.idempotent.IdempotentProtocol.AddressProtocol value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasAddress = true;
+        result.address_ = value;
+        return this;
+      }
+      public Builder setAddress(eip.idempotent.IdempotentProtocol.AddressProtocol.Builder builderForValue) {
+        result.hasAddress = true;
+        result.address_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeAddress(eip.idempotent.IdempotentProtocol.AddressProtocol value) {
+        if (result.hasAddress() &&
+            result.address_ != eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance()) {
+          result.address_ =
+            eip.idempotent.IdempotentProtocol.AddressProtocol.newBuilder(result.address_).mergeFrom(value).buildPartial();
+        } else {
+          result.address_ = value;
+        }
+        result.hasAddress = true;
+        return this;
+      }
+      public Builder clearAddress() {
+        result.hasAddress = false;
+        result.address_ = eip.idempotent.IdempotentProtocol.AddressProtocol.getDefaultInstance();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:eip.idempotent.FrameRequestProtocol)
+    }
+    
+    static {
+      defaultInstance = new FrameRequestProtocol(true);
+      eip.idempotent.IdempotentProtocol.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:eip.idempotent.FrameRequestProtocol)
+  }
+  
+  public static final class FrameResponseProtocol extends
+      com.google.protobuf.GeneratedMessage {
+    // Use FrameResponseProtocol.newBuilder() to construct.
+    private FrameResponseProtocol() {
+      initFields();
+    }
+    private FrameResponseProtocol(boolean noInit) {}
+    
+    private static final FrameResponseProtocol defaultInstance;
+    public static FrameResponseProtocol getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public FrameResponseProtocol getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_FrameResponseProtocol_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_FrameResponseProtocol_fieldAccessorTable;
+    }
+    
+    // required .eip.idempotent.FrameProtocol frame = 3;
+    public static final int FRAME_FIELD_NUMBER = 3;
+    private boolean hasFrame;
+    private eip.idempotent.IdempotentProtocol.FrameProtocol frame_;
+    public boolean hasFrame() { return hasFrame; }
+    public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() { return frame_; }
+    
+    private void initFields() {
+      frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+    }
+    public final boolean isInitialized() {
+      if (!hasFrame) return false;
+      if (!getFrame().isInitialized()) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasFrame()) {
+        output.writeMessage(3, getFrame());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasFrame()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, getFrame());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.FrameResponseProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(eip.idempotent.IdempotentProtocol.FrameResponseProtocol prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private eip.idempotent.IdempotentProtocol.FrameResponseProtocol result;
+      
+      // Construct using eip.idempotent.IdempotentProtocol.FrameResponseProtocol.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new eip.idempotent.IdempotentProtocol.FrameResponseProtocol();
+        return builder;
+      }
+      
+      protected eip.idempotent.IdempotentProtocol.FrameResponseProtocol internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new eip.idempotent.IdempotentProtocol.FrameResponseProtocol();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return eip.idempotent.IdempotentProtocol.FrameResponseProtocol.getDescriptor();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.FrameResponseProtocol getDefaultInstanceForType() {
+        return eip.idempotent.IdempotentProtocol.FrameResponseProtocol.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public eip.idempotent.IdempotentProtocol.FrameResponseProtocol build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private eip.idempotent.IdempotentProtocol.FrameResponseProtocol buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.FrameResponseProtocol buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        eip.idempotent.IdempotentProtocol.FrameResponseProtocol returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof eip.idempotent.IdempotentProtocol.FrameResponseProtocol) {
+          return mergeFrom((eip.idempotent.IdempotentProtocol.FrameResponseProtocol)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(eip.idempotent.IdempotentProtocol.FrameResponseProtocol other) {
+        if (other == eip.idempotent.IdempotentProtocol.FrameResponseProtocol.getDefaultInstance()) return this;
+        if (other.hasFrame()) {
+          mergeFrame(other.getFrame());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 26: {
+              eip.idempotent.IdempotentProtocol.FrameProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder();
+              if (hasFrame()) {
+                subBuilder.mergeFrom(getFrame());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setFrame(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required .eip.idempotent.FrameProtocol frame = 3;
+      public boolean hasFrame() {
+        return result.hasFrame();
+      }
+      public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() {
+        return result.getFrame();
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasFrame = true;
+        result.frame_ = value;
+        return this;
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol.Builder builderForValue) {
+        result.hasFrame = true;
+        result.frame_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (result.hasFrame() &&
+            result.frame_ != eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance()) {
+          result.frame_ =
+            eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder(result.frame_).mergeFrom(value).buildPartial();
+        } else {
+          result.frame_ = value;
+        }
+        result.hasFrame = true;
+        return this;
+      }
+      public Builder clearFrame() {
+        result.hasFrame = false;
+        result.frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:eip.idempotent.FrameResponseProtocol)
+    }
+    
+    static {
+      defaultInstance = new FrameResponseProtocol(true);
+      eip.idempotent.IdempotentProtocol.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:eip.idempotent.FrameResponseProtocol)
+  }
+  
+  public static final class RepeatFrameRequestProtocol extends
+      com.google.protobuf.GeneratedMessage {
+    // Use RepeatFrameRequestProtocol.newBuilder() to construct.
+    private RepeatFrameRequestProtocol() {
+      initFields();
+    }
+    private RepeatFrameRequestProtocol(boolean noInit) {}
+    
+    private static final RepeatFrameRequestProtocol defaultInstance;
+    public static RepeatFrameRequestProtocol getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public RepeatFrameRequestProtocol getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_RepeatFrameRequestProtocol_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_RepeatFrameRequestProtocol_fieldAccessorTable;
+    }
+    
+    // required .eip.idempotent.FrameProtocol frame = 1;
+    public static final int FRAME_FIELD_NUMBER = 1;
+    private boolean hasFrame;
+    private eip.idempotent.IdempotentProtocol.FrameProtocol frame_;
+    public boolean hasFrame() { return hasFrame; }
+    public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() { return frame_; }
+    
+    // repeated int32 envelope = 3;
+    public static final int ENVELOPE_FIELD_NUMBER = 3;
+    private java.util.List<java.lang.Integer> envelope_ =
+      java.util.Collections.emptyList();
+    public java.util.List<java.lang.Integer> getEnvelopeList() {
+      return envelope_;
+    }
+    public int getEnvelopeCount() { return envelope_.size(); }
+    public int getEnvelope(int index) {
+      return envelope_.get(index);
+    }
+    
+    private void initFields() {
+      frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+    }
+    public final boolean isInitialized() {
+      if (!hasFrame) return false;
+      if (!getFrame().isInitialized()) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasFrame()) {
+        output.writeMessage(1, getFrame());
+      }
+      for (int element : getEnvelopeList()) {
+        output.writeInt32(3, element);
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasFrame()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getFrame());
+      }
+      {
+        int dataSize = 0;
+        for (int element : getEnvelopeList()) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 1 * getEnvelopeList().size();
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol result;
+      
+      // Construct using eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol();
+        return builder;
+      }
+      
+      protected eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol.getDescriptor();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol getDefaultInstanceForType() {
+        return eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        if (result.envelope_ != java.util.Collections.EMPTY_LIST) {
+          result.envelope_ =
+            java.util.Collections.unmodifiableList(result.envelope_);
+        }
+        eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol) {
+          return mergeFrom((eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol other) {
+        if (other == eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol.getDefaultInstance()) return this;
+        if (other.hasFrame()) {
+          mergeFrame(other.getFrame());
+        }
+        if (!other.envelope_.isEmpty()) {
+          if (result.envelope_.isEmpty()) {
+            result.envelope_ = new java.util.ArrayList<java.lang.Integer>();
+          }
+          result.envelope_.addAll(other.envelope_);
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              eip.idempotent.IdempotentProtocol.FrameProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder();
+              if (hasFrame()) {
+                subBuilder.mergeFrom(getFrame());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setFrame(subBuilder.buildPartial());
+              break;
+            }
+            case 24: {
+              addEnvelope(input.readInt32());
+              break;
+            }
+            case 26: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              while (input.getBytesUntilLimit() > 0) {
+                addEnvelope(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required .eip.idempotent.FrameProtocol frame = 1;
+      public boolean hasFrame() {
+        return result.hasFrame();
+      }
+      public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() {
+        return result.getFrame();
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasFrame = true;
+        result.frame_ = value;
+        return this;
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol.Builder builderForValue) {
+        result.hasFrame = true;
+        result.frame_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (result.hasFrame() &&
+            result.frame_ != eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance()) {
+          result.frame_ =
+            eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder(result.frame_).mergeFrom(value).buildPartial();
+        } else {
+          result.frame_ = value;
+        }
+        result.hasFrame = true;
+        return this;
+      }
+      public Builder clearFrame() {
+        result.hasFrame = false;
+        result.frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+        return this;
+      }
+      
+      // repeated int32 envelope = 3;
+      public java.util.List<java.lang.Integer> getEnvelopeList() {
+        return java.util.Collections.unmodifiableList(result.envelope_);
+      }
+      public int getEnvelopeCount() {
+        return result.getEnvelopeCount();
+      }
+      public int getEnvelope(int index) {
+        return result.getEnvelope(index);
+      }
+      public Builder setEnvelope(int index, int value) {
+        result.envelope_.set(index, value);
+        return this;
+      }
+      public Builder addEnvelope(int value) {
+        if (result.envelope_.isEmpty()) {
+          result.envelope_ = new java.util.ArrayList<java.lang.Integer>();
+        }
+        result.envelope_.add(value);
+        return this;
+      }
+      public Builder addAllEnvelope(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        if (result.envelope_.isEmpty()) {
+          result.envelope_ = new java.util.ArrayList<java.lang.Integer>();
+        }
+        super.addAll(values, result.envelope_);
+        return this;
+      }
+      public Builder clearEnvelope() {
+        result.envelope_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:eip.idempotent.RepeatFrameRequestProtocol)
+    }
+    
+    static {
+      defaultInstance = new RepeatFrameRequestProtocol(true);
+      eip.idempotent.IdempotentProtocol.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:eip.idempotent.RepeatFrameRequestProtocol)
+  }
+  
+  public static final class RepeatFrameResponseProtocol extends
+      com.google.protobuf.GeneratedMessage {
+    // Use RepeatFrameResponseProtocol.newBuilder() to construct.
+    private RepeatFrameResponseProtocol() {
+      initFields();
+    }
+    private RepeatFrameResponseProtocol(boolean noInit) {}
+    
+    private static final RepeatFrameResponseProtocol defaultInstance;
+    public static RepeatFrameResponseProtocol getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public RepeatFrameResponseProtocol getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_RepeatFrameResponseProtocol_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_RepeatFrameResponseProtocol_fieldAccessorTable;
+    }
+    
+    // required .eip.idempotent.FrameProtocol frame = 1;
+    public static final int FRAME_FIELD_NUMBER = 1;
+    private boolean hasFrame;
+    private eip.idempotent.IdempotentProtocol.FrameProtocol frame_;
+    public boolean hasFrame() { return hasFrame; }
+    public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() { return frame_; }
+    
+    private void initFields() {
+      frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+    }
+    public final boolean isInitialized() {
+      if (!hasFrame) return false;
+      if (!getFrame().isInitialized()) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasFrame()) {
+        output.writeMessage(1, getFrame());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasFrame()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getFrame());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol result;
+      
+      // Construct using eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol();
+        return builder;
+      }
+      
+      protected eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol.getDescriptor();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol getDefaultInstanceForType() {
+        return eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol) {
+          return mergeFrom((eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol other) {
+        if (other == eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol.getDefaultInstance()) return this;
+        if (other.hasFrame()) {
+          mergeFrame(other.getFrame());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              eip.idempotent.IdempotentProtocol.FrameProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder();
+              if (hasFrame()) {
+                subBuilder.mergeFrom(getFrame());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setFrame(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required .eip.idempotent.FrameProtocol frame = 1;
+      public boolean hasFrame() {
+        return result.hasFrame();
+      }
+      public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() {
+        return result.getFrame();
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasFrame = true;
+        result.frame_ = value;
+        return this;
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol.Builder builderForValue) {
+        result.hasFrame = true;
+        result.frame_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (result.hasFrame() &&
+            result.frame_ != eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance()) {
+          result.frame_ =
+            eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder(result.frame_).mergeFrom(value).buildPartial();
+        } else {
+          result.frame_ = value;
+        }
+        result.hasFrame = true;
+        return this;
+      }
+      public Builder clearFrame() {
+        result.hasFrame = false;
+        result.frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:eip.idempotent.RepeatFrameResponseProtocol)
+    }
+    
+    static {
+      defaultInstance = new RepeatFrameResponseProtocol(true);
+      eip.idempotent.IdempotentProtocol.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:eip.idempotent.RepeatFrameResponseProtocol)
+  }
+  
+  public static final class CompleteFrameRequestProtocol extends
+      com.google.protobuf.GeneratedMessage {
+    // Use CompleteFrameRequestProtocol.newBuilder() to construct.
+    private CompleteFrameRequestProtocol() {
+      initFields();
+    }
+    private CompleteFrameRequestProtocol(boolean noInit) {}
+    
+    private static final CompleteFrameRequestProtocol defaultInstance;
+    public static CompleteFrameRequestProtocol getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public CompleteFrameRequestProtocol getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_CompleteFrameRequestProtocol_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_CompleteFrameRequestProtocol_fieldAccessorTable;
+    }
+    
+    // required .eip.idempotent.FrameProtocol frame = 1;
+    public static final int FRAME_FIELD_NUMBER = 1;
+    private boolean hasFrame;
+    private eip.idempotent.IdempotentProtocol.FrameProtocol frame_;
+    public boolean hasFrame() { return hasFrame; }
+    public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() { return frame_; }
+    
+    private void initFields() {
+      frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+    }
+    public final boolean isInitialized() {
+      if (!hasFrame) return false;
+      if (!getFrame().isInitialized()) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasFrame()) {
+        output.writeMessage(1, getFrame());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasFrame()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getFrame());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol result;
+      
+      // Construct using eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol();
+        return builder;
+      }
+      
+      protected eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol.getDescriptor();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol getDefaultInstanceForType() {
+        return eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol) {
+          return mergeFrom((eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol other) {
+        if (other == eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol.getDefaultInstance()) return this;
+        if (other.hasFrame()) {
+          mergeFrame(other.getFrame());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              eip.idempotent.IdempotentProtocol.FrameProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder();
+              if (hasFrame()) {
+                subBuilder.mergeFrom(getFrame());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setFrame(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required .eip.idempotent.FrameProtocol frame = 1;
+      public boolean hasFrame() {
+        return result.hasFrame();
+      }
+      public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() {
+        return result.getFrame();
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasFrame = true;
+        result.frame_ = value;
+        return this;
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol.Builder builderForValue) {
+        result.hasFrame = true;
+        result.frame_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (result.hasFrame() &&
+            result.frame_ != eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance()) {
+          result.frame_ =
+            eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder(result.frame_).mergeFrom(value).buildPartial();
+        } else {
+          result.frame_ = value;
+        }
+        result.hasFrame = true;
+        return this;
+      }
+      public Builder clearFrame() {
+        result.hasFrame = false;
+        result.frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:eip.idempotent.CompleteFrameRequestProtocol)
+    }
+    
+    static {
+      defaultInstance = new CompleteFrameRequestProtocol(true);
+      eip.idempotent.IdempotentProtocol.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:eip.idempotent.CompleteFrameRequestProtocol)
+  }
+  
+  public static final class CompleteFrameResponseProtocol extends
+      com.google.protobuf.GeneratedMessage {
+    // Use CompleteFrameResponseProtocol.newBuilder() to construct.
+    private CompleteFrameResponseProtocol() {
+      initFields();
+    }
+    private CompleteFrameResponseProtocol(boolean noInit) {}
+    
+    private static final CompleteFrameResponseProtocol defaultInstance;
+    public static CompleteFrameResponseProtocol getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public CompleteFrameResponseProtocol getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_CompleteFrameResponseProtocol_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return eip.idempotent.IdempotentProtocol.internal_static_eip_idempotent_CompleteFrameResponseProtocol_fieldAccessorTable;
+    }
+    
+    // required .eip.idempotent.FrameProtocol frame = 1;
+    public static final int FRAME_FIELD_NUMBER = 1;
+    private boolean hasFrame;
+    private eip.idempotent.IdempotentProtocol.FrameProtocol frame_;
+    public boolean hasFrame() { return hasFrame; }
+    public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() { return frame_; }
+    
+    private void initFields() {
+      frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+    }
+    public final boolean isInitialized() {
+      if (!hasFrame) return false;
+      if (!getFrame().isInitialized()) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasFrame()) {
+        output.writeMessage(1, getFrame());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasFrame()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getFrame());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol result;
+      
+      // Construct using eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol();
+        return builder;
+      }
+      
+      protected eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol.getDescriptor();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol getDefaultInstanceForType() {
+        return eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol) {
+          return mergeFrom((eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol other) {
+        if (other == eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol.getDefaultInstance()) return this;
+        if (other.hasFrame()) {
+          mergeFrame(other.getFrame());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              eip.idempotent.IdempotentProtocol.FrameProtocol.Builder subBuilder = eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder();
+              if (hasFrame()) {
+                subBuilder.mergeFrom(getFrame());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setFrame(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required .eip.idempotent.FrameProtocol frame = 1;
+      public boolean hasFrame() {
+        return result.hasFrame();
+      }
+      public eip.idempotent.IdempotentProtocol.FrameProtocol getFrame() {
+        return result.getFrame();
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasFrame = true;
+        result.frame_ = value;
+        return this;
+      }
+      public Builder setFrame(eip.idempotent.IdempotentProtocol.FrameProtocol.Builder builderForValue) {
+        result.hasFrame = true;
+        result.frame_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeFrame(eip.idempotent.IdempotentProtocol.FrameProtocol value) {
+        if (result.hasFrame() &&
+            result.frame_ != eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance()) {
+          result.frame_ =
+            eip.idempotent.IdempotentProtocol.FrameProtocol.newBuilder(result.frame_).mergeFrom(value).buildPartial();
+        } else {
+          result.frame_ = value;
+        }
+        result.hasFrame = true;
+        return this;
+      }
+      public Builder clearFrame() {
+        result.hasFrame = false;
+        result.frame_ = eip.idempotent.IdempotentProtocol.FrameProtocol.getDefaultInstance();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:eip.idempotent.CompleteFrameResponseProtocol)
+    }
+    
+    static {
+      defaultInstance = new CompleteFrameResponseProtocol(true);
+      eip.idempotent.IdempotentProtocol.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:eip.idempotent.CompleteFrameResponseProtocol)
+  }
+  
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_eip_idempotent_EnvelopeProtocol_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_eip_idempotent_EnvelopeProtocol_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_eip_idempotent_SenderProtocol_descriptor;
+    internal_static_eip_idempotent_FrameProtocol_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_eip_idempotent_SenderProtocol_fieldAccessorTable;
+      internal_static_eip_idempotent_FrameProtocol_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_eip_idempotent_AddressProtocol_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_eip_idempotent_AddressProtocol_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_eip_idempotent_PayloadProtocol_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_eip_idempotent_PayloadProtocol_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_eip_idempotent_FrameRequestProtocol_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_eip_idempotent_FrameRequestProtocol_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_eip_idempotent_FrameResponseProtocol_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_eip_idempotent_FrameResponseProtocol_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_eip_idempotent_RepeatFrameRequestProtocol_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_eip_idempotent_RepeatFrameRequestProtocol_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_eip_idempotent_RepeatFrameResponseProtocol_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_eip_idempotent_RepeatFrameResponseProtocol_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_eip_idempotent_CompleteFrameRequestProtocol_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_eip_idempotent_CompleteFrameRequestProtocol_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_eip_idempotent_CompleteFrameResponseProtocol_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_eip_idempotent_CompleteFrameResponseProtocol_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1192,13 +3670,29 @@ public final class IdempotentProtocol {
   static {
     java.lang.String[] descriptorData = {
       "\n\030IdempotentProtocol.proto\022\016eip.idempote" +
-      "nt\"\223\001\n\020EnvelopeProtocol\022\n\n\002id\030\001 \002(\003\022\021\n\tt" +
-      "imestamp\030\002 \002(\003\022.\n\006sender\030\003 \002(\0132\036.eip.ide" +
-      "mpotent.SenderProtocol\0220\n\007payload\030\004 \001(\0132" +
-      "\037.eip.idempotent.PayloadProtocol\";\n\016Send" +
-      "erProtocol\022\014\n\004host\030\001 \002(\t\022\014\n\004port\030\002 \002(\005\022\r" +
-      "\n\005actor\030\003 \002(\t\";\n\017PayloadProtocol\022\017\n\007mess" +
-      "age\030\001 \002(\014\022\027\n\017messageManifest\030\002 \001(\014"
+      "nt\"a\n\020EnvelopeProtocol\022\n\n\002id\030\001 \002(\005\022\017\n\007fr" +
+      "ameId\030\002 \002(\005\0220\n\007payload\030\003 \001(\0132\037.eip.idemp" +
+      "otent.PayloadProtocol\"\242\001\n\rFrameProtocol\022" +
+      "\n\n\002id\030\001 \002(\005\022\014\n\004size\030\002 \002(\005\0226\n\rreturnAddre" +
+      "ss\030\003 \002(\0132\037.eip.idempotent.AddressProtoco" +
+      "l\0220\n\007address\030\004 \002(\0132\037.eip.idempotent.Addr" +
+      "essProtocol\022\r\n\005count\030\005 \001(\005\"<\n\017AddressPro" +
+      "tocol\022\014\n\004host\030\001 \002(\t\022\014\n\004port\030\002 \002(\005\022\r\n\005act" +
+      "or\030\003 \002(\t\";\n\017PayloadProtocol\022\017\n\007message\030\001",
+      " \002(\014\022\027\n\017messageManifest\030\002 \001(\014\"\200\001\n\024FrameR" +
+      "equestProtocol\0226\n\rreturnAddress\030\001 \002(\0132\037." +
+      "eip.idempotent.AddressProtocol\0220\n\007addres" +
+      "s\030\002 \002(\0132\037.eip.idempotent.AddressProtocol" +
+      "\"E\n\025FrameResponseProtocol\022,\n\005frame\030\003 \002(\013" +
+      "2\035.eip.idempotent.FrameProtocol\"\\\n\032Repea" +
+      "tFrameRequestProtocol\022,\n\005frame\030\001 \002(\0132\035.e" +
+      "ip.idempotent.FrameProtocol\022\020\n\010envelope\030" +
+      "\003 \003(\005\"K\n\033RepeatFrameResponseProtocol\022,\n\005" +
+      "frame\030\001 \002(\0132\035.eip.idempotent.FrameProtoc",
+      "ol\"L\n\034CompleteFrameRequestProtocol\022,\n\005fr" +
+      "ame\030\001 \002(\0132\035.eip.idempotent.FrameProtocol" +
+      "\"M\n\035CompleteFrameResponseProtocol\022,\n\005fra" +
+      "me\030\001 \002(\0132\035.eip.idempotent.FrameProtocol"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -1210,25 +3704,81 @@ public final class IdempotentProtocol {
           internal_static_eip_idempotent_EnvelopeProtocol_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_eip_idempotent_EnvelopeProtocol_descriptor,
-              new java.lang.String[] { "Id", "Timestamp", "Sender", "Payload", },
+              new java.lang.String[] { "Id", "FrameId", "Payload", },
               eip.idempotent.IdempotentProtocol.EnvelopeProtocol.class,
               eip.idempotent.IdempotentProtocol.EnvelopeProtocol.Builder.class);
-          internal_static_eip_idempotent_SenderProtocol_descriptor =
+          internal_static_eip_idempotent_FrameProtocol_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_eip_idempotent_SenderProtocol_fieldAccessorTable = new
+          internal_static_eip_idempotent_FrameProtocol_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_eip_idempotent_SenderProtocol_descriptor,
-              new java.lang.String[] { "Host", "Port", "Actor", },
-              eip.idempotent.IdempotentProtocol.SenderProtocol.class,
-              eip.idempotent.IdempotentProtocol.SenderProtocol.Builder.class);
-          internal_static_eip_idempotent_PayloadProtocol_descriptor =
+              internal_static_eip_idempotent_FrameProtocol_descriptor,
+              new java.lang.String[] { "Id", "Size", "ReturnAddress", "Address", "Count", },
+              eip.idempotent.IdempotentProtocol.FrameProtocol.class,
+              eip.idempotent.IdempotentProtocol.FrameProtocol.Builder.class);
+          internal_static_eip_idempotent_AddressProtocol_descriptor =
             getDescriptor().getMessageTypes().get(2);
+          internal_static_eip_idempotent_AddressProtocol_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_eip_idempotent_AddressProtocol_descriptor,
+              new java.lang.String[] { "Host", "Port", "Actor", },
+              eip.idempotent.IdempotentProtocol.AddressProtocol.class,
+              eip.idempotent.IdempotentProtocol.AddressProtocol.Builder.class);
+          internal_static_eip_idempotent_PayloadProtocol_descriptor =
+            getDescriptor().getMessageTypes().get(3);
           internal_static_eip_idempotent_PayloadProtocol_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_eip_idempotent_PayloadProtocol_descriptor,
               new java.lang.String[] { "Message", "MessageManifest", },
               eip.idempotent.IdempotentProtocol.PayloadProtocol.class,
               eip.idempotent.IdempotentProtocol.PayloadProtocol.Builder.class);
+          internal_static_eip_idempotent_FrameRequestProtocol_descriptor =
+            getDescriptor().getMessageTypes().get(4);
+          internal_static_eip_idempotent_FrameRequestProtocol_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_eip_idempotent_FrameRequestProtocol_descriptor,
+              new java.lang.String[] { "ReturnAddress", "Address", },
+              eip.idempotent.IdempotentProtocol.FrameRequestProtocol.class,
+              eip.idempotent.IdempotentProtocol.FrameRequestProtocol.Builder.class);
+          internal_static_eip_idempotent_FrameResponseProtocol_descriptor =
+            getDescriptor().getMessageTypes().get(5);
+          internal_static_eip_idempotent_FrameResponseProtocol_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_eip_idempotent_FrameResponseProtocol_descriptor,
+              new java.lang.String[] { "Frame", },
+              eip.idempotent.IdempotentProtocol.FrameResponseProtocol.class,
+              eip.idempotent.IdempotentProtocol.FrameResponseProtocol.Builder.class);
+          internal_static_eip_idempotent_RepeatFrameRequestProtocol_descriptor =
+            getDescriptor().getMessageTypes().get(6);
+          internal_static_eip_idempotent_RepeatFrameRequestProtocol_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_eip_idempotent_RepeatFrameRequestProtocol_descriptor,
+              new java.lang.String[] { "Frame", "Envelope", },
+              eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol.class,
+              eip.idempotent.IdempotentProtocol.RepeatFrameRequestProtocol.Builder.class);
+          internal_static_eip_idempotent_RepeatFrameResponseProtocol_descriptor =
+            getDescriptor().getMessageTypes().get(7);
+          internal_static_eip_idempotent_RepeatFrameResponseProtocol_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_eip_idempotent_RepeatFrameResponseProtocol_descriptor,
+              new java.lang.String[] { "Frame", },
+              eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol.class,
+              eip.idempotent.IdempotentProtocol.RepeatFrameResponseProtocol.Builder.class);
+          internal_static_eip_idempotent_CompleteFrameRequestProtocol_descriptor =
+            getDescriptor().getMessageTypes().get(8);
+          internal_static_eip_idempotent_CompleteFrameRequestProtocol_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_eip_idempotent_CompleteFrameRequestProtocol_descriptor,
+              new java.lang.String[] { "Frame", },
+              eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol.class,
+              eip.idempotent.IdempotentProtocol.CompleteFrameRequestProtocol.Builder.class);
+          internal_static_eip_idempotent_CompleteFrameResponseProtocol_descriptor =
+            getDescriptor().getMessageTypes().get(9);
+          internal_static_eip_idempotent_CompleteFrameResponseProtocol_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_eip_idempotent_CompleteFrameResponseProtocol_descriptor,
+              new java.lang.String[] { "Frame", },
+              eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol.class,
+              eip.idempotent.IdempotentProtocol.CompleteFrameResponseProtocol.Builder.class);
           return null;
         }
       };

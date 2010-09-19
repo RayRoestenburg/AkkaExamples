@@ -2,7 +2,7 @@ package eip.idempotent
 
 import se.scalablesolutions.akka.serialization.Serializer
 import com.google.protobuf.{ByteString, Message}
-import eip.idempotent.IdempotentProtocol.{SenderProtocol, PayloadProtocol, EnvelopeProtocol}
+import eip.idempotent.IdempotentProtocol.{FrameProtocol, AddressProtocol, PayloadProtocol, EnvelopeProtocol}
 
 /**
  * Serializer to serialize and deserialize the Envelope and any protobuf message that it contains,
@@ -15,11 +15,9 @@ object EnvelopeSerializer {
    * Deserializes the envelope and returns the envelope and the enclosed payload
    */
   def deserialize(envelopeProtocol: EnvelopeProtocol): (Envelope, Any) = {
-
     val clazz = loadManifest(SERIALIZER_PROTOBUF.classLoader, envelopeProtocol.getPayload)
     val payload = SERIALIZER_PROTOBUF.fromBinary(envelopeProtocol.getPayload.getMessage.toByteArray, Some(clazz))
-    val sender = new Sender(envelopeProtocol.getSender.getHost, envelopeProtocol.getSender.getPort, envelopeProtocol.getSender.getActor)
-    val envelope = new Envelope(envelopeProtocol.getId, envelopeProtocol.getTimestamp, sender)
+    val envelope = new Envelope(envelopeProtocol.getId, envelopeProtocol.getFrameId)
     (envelope, payload)
   }
 
@@ -30,17 +28,11 @@ object EnvelopeSerializer {
     val payloadBuilder = PayloadProtocol.newBuilder
     payloadBuilder.setMessage(ByteString.copyFrom(message.toByteArray))
     payloadBuilder.setMessageManifest(ByteString.copyFromUtf8(message.getClass.getName))
-    val senderBuilder = SenderProtocol.newBuilder
-    senderBuilder.setHost(envelope.sender.host)
-    senderBuilder.setActor(envelope.sender.actor)
-    senderBuilder.setPort(envelope.sender.port)
-    val senderProtocol = senderBuilder.build
     val payloadProtocol = payloadBuilder.build
     val envBuilder = EnvelopeProtocol.newBuilder
     envBuilder.setPayload(payloadProtocol)
     envBuilder.setId(envelope.id)
-    envBuilder.setTimestamp(envelope.timestamp)
-    envBuilder.setSender(senderProtocol)
+    envBuilder.setFrameId(envelope.frameId)
     envBuilder.build
   }
 
@@ -49,7 +41,7 @@ object EnvelopeSerializer {
    */
   def fromBytes(bytes: Array[Byte]): Envelope = {
     val protocol = EnvelopeProtocol.parseFrom(bytes);
-    new Envelope(protocol.getId, protocol.getTimestamp, new Sender(protocol.getSender.getHost, protocol.getSender.getPort, protocol.getSender.getActor))
+    new Envelope(protocol.getId, protocol.getFrameId)
   }
 
   /**
@@ -58,14 +50,51 @@ object EnvelopeSerializer {
   def toBytes(envelope: Envelope): Array[Byte] = {
     val builder = EnvelopeProtocol.newBuilder
     builder.setId(envelope.id)
-    builder.setTimestamp(envelope.timestamp)
-    val senderBuilder = SenderProtocol.newBuilder
-    senderBuilder.setHost(envelope.sender.host)
-    senderBuilder.setPort(envelope.sender.port)
-    senderBuilder.setActor(envelope.sender.actor)
-    val sender = senderBuilder.build
-    builder.setSender(sender)
+    builder.setFrameId(envelope.frameId)
     builder.build.toByteArray
+  }
+
+  def toBytes(address:Address) : Array[Byte] = {
+    val addressBuilder = AddressProtocol.newBuilder
+    addressBuilder.setHost(address.host)
+    addressBuilder.setPort(address.port)
+    addressBuilder.setActor(address.actor)
+    addressBuilder.build.toByteArray
+  }
+  def addressFromBytes(bytes: Array[Byte]): Address = {
+    val protocol = AddressProtocol.parseFrom(bytes);
+    new Address(protocol.getHost, protocol.getPort, protocol.getActor)
+  }
+  def frameFromBytes(bytes: Array[Byte]): Frame = {
+    val protocol = FrameProtocol.parseFrom(bytes);
+    fromProtocol(protocol)
+  }
+  def fromProtocol(protocol:FrameProtocol): Frame = {
+    new Frame(protocol.getId, protocol.getSize, fromProtocol(protocol.getReturnAddress), fromProtocol(protocol.getAddress))
+  }
+
+  def toBytes(frame:Frame) : Array[Byte] = {
+    toProtocol(frame).toByteArray
+  }
+  def toProtocol(address:Address) :AddressProtocol= {
+    val addressBuilder = AddressProtocol.newBuilder
+    addressBuilder.setActor(address.actor)
+    addressBuilder.setHost(address.host)
+    addressBuilder.setPort(address.port)
+    addressBuilder.build
+  }
+
+  def fromProtocol(protocol: AddressProtocol) : Address = {
+    new Address(protocol.getHost, protocol.getPort, protocol.getActor)
+  }
+  
+  def toProtocol(frame:Frame) : FrameProtocol = {
+    val frameBuilder = FrameProtocol.newBuilder
+    frameBuilder.setId(frame.id)
+    frameBuilder.setSize(frame.size)
+    frameBuilder.setReturnAddress(toProtocol(frame.returnAddress))
+    frameBuilder.setAddress(toProtocol(frame.address))
+    frameBuilder.build
   }
 
   private def loadManifest(classLoader: Option[ClassLoader], payloadProtocol: PayloadProtocol): Class[_] = {

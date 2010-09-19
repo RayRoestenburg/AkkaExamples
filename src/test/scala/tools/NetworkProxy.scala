@@ -14,9 +14,6 @@ import java.net.{SocketException, ServerSocket, Socket}
  */
 
 class NetworkProxy extends Logging {
-  //TODO Buffer the requests and responses, add request listeners, response listeners to inspect streams
-  //TODO add networkSpeed =  (Client, Server)
-  //TODO add clientNetworkError, serverNetworkError (Timeout, SocketClosed, etc)
   private var localPort: Int = 18001
   private var proxyRunnable: ProxyRunnable = null
   private var host: String = "localhost"

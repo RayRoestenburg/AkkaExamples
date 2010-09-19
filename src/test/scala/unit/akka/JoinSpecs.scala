@@ -49,7 +49,7 @@ case class FirstMessage(id: String, name: String)
 case class SecondMessage(data: String)
 /** An aggregated message, from first and second */
 case class AggregateMessage(id: String, name: String, data: String)
-/** A command to isPending the last message*/
+/** A command to get the last message*/
 case class GiveMeLastMessage()
 
 /**

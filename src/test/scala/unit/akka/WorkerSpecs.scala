@@ -47,7 +47,7 @@ class WorkerSpecs extends Spec with MustMatchers {
 
 /**A command message */
 case class Command(name: String, data: String)
-/** A message to isPending the amount of commands queued*/
+/** A message to get the amount of commands queued*/
 case class CountCommandsQueued()
 /** A message to execute all commands queued */
 case class Execute()
