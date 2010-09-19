@@ -18,7 +18,6 @@ class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAf
   val proxy = new NetworkProxy("localhost", 18000, 18095)
   val envelopes = new MemEnvelopes(10)
   val BARRIER_TIMEOUT = 5000
-  //TODO use start like remote server
   val idempotentServer = new IdempotentServer(envelopes, 1000)
   val repeatBuffer = new MemRepeatBuffer
   var repeaterClient = new RepeaterClient(new Address("localhost", 17000, "repeater"), repeatBuffer, 1000)
