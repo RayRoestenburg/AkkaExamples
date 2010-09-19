@@ -187,11 +187,31 @@ class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAf
         assertReply(localActorRef, 19)
       }
       it("(repeater) should remove envelopes that were received by the receiver") {
-
+        var previousFrames = repeatBuffer.getFrames("localhost", 18000)
+        previousFrames should have size (1)
+        for (frame <- previousFrames) {
+          val envelopes = repeatBuffer.getEnvelopes(frame.id)
+          // expecting repeat frames from server to have happened
+          envelopes.size should be < (9)
+        }
+        barrier.reset
+        val repeaterRef = repeaterClient.repeaterFor("remote-test-actor", "localhost", 18000);
+        repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
+        barrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
+        assertReply(localActorRef, 20)
+        // should now be complete
+        var frames = repeatBuffer.getFrames("localhost", 18000)
+        frames should have size (0)
+        envelopes.getIncompleteFrames should have size (0)
+        for (frame <- previousFrames) {
+          repeatBuffer.isFrameComplete(frame.id) should be(true)
+          envelopes.getEnvelopeIds(frame.id) should have size (0)
+          repeatBuffer.getEnvelopes(frame.id) should have size (0)
+        }
       }
     }
   }
-  
+
   def assertReply(actorRef: ActorRef, countExpected: Int) = {
     var reply: Option[Any] = actorRef !! new CountOneWayRequests("data-worker")
     reply match {

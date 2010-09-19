@@ -108,6 +108,7 @@ class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
   def repeatFrame(frame: Frame): Unit = {
     val envelopes = repeatBuffer.getEnvelopes(frame.id)
     for (envelope <- envelopes) {
+      // TODO repeat frame descending on envelope id.
       val actorRef = RemoteClient.actorFor(frame.address.actor, frame.address.host, frame.address.port)
       actorRef ! envelope
     }
