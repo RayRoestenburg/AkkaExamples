@@ -26,7 +26,7 @@ class EnvelopesSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll wit
       envelopes.clear
       val env = new Envelope(13, 1)
       envelopes.put(env)
-      val someEnvelope = envelopes.get(env.frameId, env.id)
+      val someEnvelope = envelopes.get(env.frameId, env.id,null)
       someEnvelope match {
         case Some(envelope) => {
           envelope.id should equal(env.id)
@@ -45,7 +45,7 @@ class EnvelopesSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll wit
       envelopes.size should equal(1)
       envelopes.clear
       envelopes.removeFrame(1) should equal(false)
-      envelopes.get(env.frameId, env.id) should equal(None)
+      envelopes.get(env.frameId, env.id,null) should equal(None)
       envelopes.size should equal(0)
     }
   }

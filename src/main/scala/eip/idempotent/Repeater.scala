@@ -9,6 +9,7 @@ import eip.idempotent.IdempotentProtocol._
 import collection.JavaConversions._
 import com.google.protobuf.Message
 import se.scalablesolutions.akka.util.Logging
+import collection.immutable.TreeSet
 
 trait RepeatBuffer {
   def addFrame(frame: Frame)
@@ -107,8 +108,10 @@ class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
 
   def repeatFrame(frame: Frame): Unit = {
     val envelopes = repeatBuffer.getEnvelopes(frame.id)
-    for (envelope <- envelopes) {
-      // TODO repeat frame descending on envelope id.
+    var sorted = new TreeSet()(Ordering.by((_:EnvelopeProtocol).getId).reverse)
+    sorted = sorted ++ envelopes
+
+    for (envelope <- sorted) {
       val actorRef = RemoteClient.actorFor(frame.address.actor, frame.address.host, frame.address.port)
       actorRef ! envelope
     }
@@ -226,7 +229,7 @@ class Repeater(repeatBuffer: RepeatBuffer, returnAddress: Address, address: Addr
       val envelope = createNewEnvelope()
       val envmsg = EnvelopeSerializer.serialize(envelope, msg)
       val actorRef = RemoteClient.actorFor(address.actor, address.host, address.port)
-      log.debug("sending envelope %d,frame %d to %s, %s, %d", envelope.id, envelope.frameId, address.actor, address.host, address.port)
+      log.debug("Sending envelope %d,frame %d to %s, %s, %d", envelope.id, envelope.frameId, address.actor, address.host, address.port)
       actorRef ! envmsg
       repeatBuffer.addEnvelope(envmsg)
     }
@@ -240,7 +243,7 @@ class Repeater(repeatBuffer: RepeatBuffer, returnAddress: Address, address: Addr
   }
 
   def requestNewFrame(): Frame = {
-    log.debug("requesting new frame from actor %s, host %s, port %d", address.actor, address.host, address.port)
+    log.debug("Requesting new frame from actor %s, host %s, port %d", address.actor, address.host, address.port)
     val actorRef = RemoteClient.actorFor(address.actor, address.host, address.port)
 
     var success = false

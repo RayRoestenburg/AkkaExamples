@@ -190,7 +190,7 @@ class IdempotentReceiver(actors: Set[ActorRef], envelopes: Envelopes) extends Ac
       val envelope = protomsg._1
       val payload = protomsg._2
 
-      val someValue = envelopes.get(envelope.frameId, envelope.id)
+      val someValue = envelopes.get(envelope.frameId, envelope.id, payload)
       someValue match {
         case Some(envelope: Envelope) => {
           log.debug("Ignored envelope %d, frame %d", envelope.id, envelope.frameId)

@@ -1,17 +1,16 @@
 package eip.idempotent
 
 import java.lang.String
-import collection.mutable.HashMap
-import se.scalablesolutions.akka.persistence.redis.RedisStorage
-import se.scalablesolutions.akka.stm.local._
 import org.jgroups.{Message, ReceiverAdapter, JChannel}
 import se.scalablesolutions.akka.stm.local._
 import collection.JavaConversions.JConcurrentMapWrapper
+import eip.idempotent.IdempotentProtocol.EnvelopeProtocol
+import se.scalablesolutions.akka.remote.RemoteClient
+import collection.mutable.Queue
 import java.util.concurrent.ConcurrentHashMap
-
+import java.io.{ObjectOutput, ObjectInput, Externalizable, File}
 
 /**
- * //TODO implement JGroups
  * Keeps track of Envelopes on the Idempotent Receiver side
  */
 trait Envelopes {
@@ -23,7 +22,7 @@ trait Envelopes {
   /**
    * returns the envelope for the id passed
    */
-  def get(frameId:Int, id: Int): Option[Envelope]
+  def get(frameId: Int, id: Int, payload: Any): Option[Envelope]
 
   /**
    * stores the envelope, returns true if the frame is complete
@@ -93,8 +92,8 @@ class MemEnvelopes(frameSize: Int) extends Envelopes {
     frames.clear
   }
 
-  def get(frameId:Int, id: Int): Option[Envelope] = {
-    envelopes.get((frameId,id))
+  def get(frameId: Int, id: Int, payload: Any): Option[Envelope] = {
+    envelopes.get((frameId, id))
   }
 
   def nextFrame(returnAddress: Address, address: Address): Frame = {
@@ -105,15 +104,15 @@ class MemEnvelopes(frameSize: Int) extends Envelopes {
   }
 
   def isFrameComplete(frameId: Int): Boolean = {
-    frames.get(frameId).exists(frame => frameCounts.getOrElse(frameId,0) >= frame.size)
+    frames.get(frameId).exists(frame => frameCounts.getOrElse(frameId, 0) >= frame.size)
   }
 
   def getEnvelopeIds(frameId: Int): Set[Int] = {
-    envelopes.filter( pair => pair._2.frameId == frameId).values.map(envelope => envelope.id).toSet
+    envelopes.filter(pair => pair._2.frameId == frameId).values.map(envelope => envelope.id).toSet
   }
 
   def getIncompleteFrames(): Set[Frame] = {
-    frames.filter(pair=> frameCounts.getOrElse(pair._1,0) < pair._2.size).values.toSet
+    frames.filter(pair => frameCounts.getOrElse(pair._1, 0) < pair._2.size).values.toSet
   }
 
   def getFrame(frameId: Int): Option[Frame] = {
@@ -122,17 +121,19 @@ class MemEnvelopes(frameSize: Int) extends Envelopes {
 
 
   def put(envelope: Envelope): Boolean = {
-    envelopes += (envelope.frameId, envelope.id) -> envelope
-    val someCount = frameCounts.get(envelope.frameId)
     var complete = false
-    someCount match {
-      case Some(count) => {
-        var updated = count + 1
-        frameCounts += envelope.frameId -> updated
-        if (frameSize <= updated) complete = true
-      }
-      case None => {
-        frameCounts += envelope.frameId -> 1
+    if (!envelopes.contains((envelope.frameId, envelope.id))) {
+      envelopes += (envelope.frameId, envelope.id) -> envelope
+      val someCount = frameCounts.get(envelope.frameId)
+      someCount match {
+        case Some(count) => {
+          var updated = count + 1
+          frameCounts += envelope.frameId -> updated
+          if (frameSize <= updated) complete = true
+        }
+        case None => {
+          frameCounts += envelope.frameId -> 1
+        }
       }
     }
     complete
@@ -162,35 +163,126 @@ class MemEnvelopes(frameSize: Int) extends Envelopes {
 }
 
 /**
- * JGroup clustered envelopes.
+ * JGroupEnvelopes.Instead of distributing state,
+ * the servers "own" frames that they have created, frames are in this way partitioned over the servers by frame Id.
+ * if the server receives a frame that it does not own, it forwards it to all the other servers.
  */
-//class JGroupEnvelopes(envelopes: Envelopes, storageKey: String, cluster: String) extends ReceiverAdapter with Envelopes {
-//  val channel = new JChannel()
-//  channel.setReceiver(this);
-//  channel.connect(cluster);
-//
-//  override def receive(msg: Message): Unit = {
-//    val bytes = msg.getBuffer
-//    val syncEnvelope = SyncEnvelope.fromBytes(bytes)
-//    if(syncEnvelope.sent){
-//      envelopes.remove(syncEnvelope.envelope.id)
-//    } else {
-//      envelopes.put(syncEnvelope.envelope)
-//    }
-//  }
-//  def get(id: Long): Option[Envelope] = {
-//    envelopes.get(id)
-//  }
-//
-//  def put(envelope: Envelope): Unit = {
-//    envelopes.put(envelope)
-//    channel.send(new Message(null, null, new SyncEnvelope(true, envelope).toBytes))
-//  }
-//
-//  def remove(id: Long): Unit = {
-//    envelopes.remove(id)
-//    //channel.send(new Message(null, null, new SyncEnvelope(false,new Envelope(id, )).toBytes))
-//  }
-//
-//  override def close = channel.close
-//}
+class JGroupEnvelopes(configFile: File, source: Envelopes, cluster: String, timeoutConnectCluster:Int) extends ReceiverAdapter with Envelopes {
+  val SIZE_COMPLETED_FRAMES_HISTORY = 100;
+  val lock = new Object()
+  val recentlyCompletedFrameIds = new Queue[Int]
+  val channel = new JChannel(configFile)
+  channel.setReceiver(this);
+  channel.connect(cluster);
+  
+  if (channel.getState(null, timeoutConnectCluster)) {
+    log.info("Creating the cluster %s", cluster)
+  } else {
+    log.info("Joining the cluster %s", cluster)
+  }
+
+  override def receive(msg: Message): Unit = {
+    if (!msg.getSrc.equals(channel.getAddress)) {
+      val exEnv= msg.getObject.asInstanceOf[ExternalizableEnvelope]
+      val envelopeProtocol = exEnv.getEnvelopeProtocol
+      val protomsg: (Envelope, Any) = EnvelopeSerializer.deserialize(envelopeProtocol)
+      val envelope = protomsg._1
+      val payload = protomsg._2
+      val frameId = envelope.frameId
+      source.getFrame(frameId) match {
+        case Some(frame) => {
+          // this server owns the frame, so send the Envelope to the receiver (through RemoteClient cause it is easy)
+          val actorRef = RemoteClient.actorFor(frame.address.actor, frame.address.host, frame.address.port)
+        }
+        case None => log.debug("Ignoring envelope %d, received through JGroups, not owning frame %d", envelope.id, frameId)
+      }
+    }
+  }
+
+  override def close = channel.close
+
+
+  def clear = {
+    source.clear
+  }
+
+  def get(frameId: Int, id: Int, payload: Any): Option[Envelope] = {
+    source.getFrame(frameId) match {
+      case Some(frame) => source.get(frameId, id,payload) //this Envelopes owns the frame
+      case None => {
+        if (!recentlyCompletedFrameIds.contains(frameId)) {
+          //send to all others in cluster if the frame is not owned by this server,
+          val protocol = EnvelopeSerializer.serialize(new Envelope(id, frameId), payload.asInstanceOf[com.google.protobuf.Message])
+          channel.send(null, channel.getAddress, new ExternalizableEnvelope(protocol))
+        }
+        Some(new Envelope(frameId, id))
+      }
+    }
+  }
+
+  def nextFrame(returnAddress: Address, address: Address): Frame = {
+    source.nextFrame(returnAddress, address)
+  }
+
+  def isFrameComplete(frameId: Int): Boolean = {
+    source.isFrameComplete(frameId)
+  }
+
+  def getEnvelopeIds(frameId: Int): Set[Int] = {
+    source.getEnvelopeIds(frameId)
+  }
+
+  def getIncompleteFrames(): Set[Frame] = {
+    source.getIncompleteFrames
+  }
+
+  def getFrame(frameId: Int): Option[Frame] = {
+    source.getFrame(frameId)
+  }
+
+
+  def put(envelope: Envelope): Boolean = {
+    val complete = source.put(envelope)
+    if (complete) {
+      lock.synchronized {
+        recentlyCompletedFrameIds.enqueue(envelope.frameId)
+        if (recentlyCompletedFrameIds.size > SIZE_COMPLETED_FRAMES_HISTORY) {
+          recentlyCompletedFrameIds.dequeue
+        }
+      }
+    }
+    complete
+  }
+
+  def removeFrame(frameId: Int): Boolean = {
+    source.removeFrame(frameId)
+  }
+
+  def size: Int = {
+    source.size
+  }
+}
+
+class ExternalizableEnvelope(message:EnvelopeProtocol) extends Externalizable {
+  var msg = message
+  
+  def this() {
+    this(EnvelopeProtocol.newBuilder.setId(0).setFrameId(0).build)
+  }
+
+  def readExternal(p1: ObjectInput) = {
+    val arraySize = p1.readInt
+    val array = new Array[Byte](arraySize)
+    p1.read(array)
+    msg = EnvelopeProtocol.parseFrom(array)
+  }
+
+  def writeExternal(p1: ObjectOutput) = {
+    val bytes = msg.toByteArray
+    p1.writeInt(bytes.size)
+    p1.write(bytes)
+  }
+  def getEnvelopeProtocol() : EnvelopeProtocol = {
+    msg
+  }
+}
