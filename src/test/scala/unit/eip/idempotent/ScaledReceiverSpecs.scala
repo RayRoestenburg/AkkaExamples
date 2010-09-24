@@ -9,18 +9,18 @@ import se.scalablesolutions.akka.actor.{Actor, ActorRef}
 import se.scalablesolutions.akka.actor.Actor._
 import se.scalablesolutions.akka.remote.{RemoteServer, RemoteClient}
 import unit.test.proto.Commands.WorkerCommand
-import eip.idempotent.IdempotentProtocol.FrameResponseProtocol
 import java.util.concurrent.{TimeUnit, CyclicBarrier}
+import eip.idempotent.IdempotentProtocol.{FrameRequestProtocol, FrameResponseProtocol}
 
 class ScaledReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
   val repeaterServerProxy = new NetworkProxy("localhost", 17000, 17095)
   val proxy = new NetworkProxy("localhost", 18000, 18094)
-  val envelopes = new JGroupEnvelopes(null, new MemEnvelopes(10), "cluster-receivers", 10000)
+  val envelopes = new JGroupEnvelopes(null, new MemEnvelopes(1,10000, 10), "cluster-receivers", 10000)
   val BARRIER_TIMEOUT = 5000
   val idempotentServer = new IdempotentServer(envelopes, 1000)
 
-  val otherEnvelopes = new JGroupEnvelopes(null, new MemEnvelopes(10), "cluster-receivers", 10000)
-  val otherIdempotentServer = new IdempotentServer(envelopes, 1000)
+  val otherEnvelopes = new JGroupEnvelopes(null, new MemEnvelopes(20000,30000, 10), "cluster-receivers", 10000)
+  val otherIdempotentServer = new IdempotentServer(otherEnvelopes, 1000)
 
   val repeatBuffer = new MemRepeatBuffer
   var repeaterClient = new RepeaterClient(new Address("localhost", 17000, "repeater"), repeatBuffer, 1000)
@@ -31,7 +31,7 @@ class ScaledReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAl
   var remoteActorRef: ActorRef = null
   var otherRemoteActorRef: ActorRef = null
   val loadBalanceServer = new RemoteServer
-  var repeaterRef:ActorRef = null
+  var repeaterRef: ActorRef = null
   //returnAddress differs from start because the proxy is in between
   repeaterClient.start("localhost", 17095)
   repeaterServerProxy.start
@@ -41,12 +41,14 @@ class ScaledReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAl
     otherLocalActorRef = actorOf(new ConnTestActor(otherBarrier))
     idempotentServer.start("localhost", 18095)
     remoteActorRef = idempotentServer.register("remote-test-actor", localActorRef)
+
     otherIdempotentServer.start("localhost", 18096)
     otherRemoteActorRef = otherIdempotentServer.register("remote-test-actor", otherLocalActorRef)
+
     loadBalanceServer.start("localhost", 18094)
     proxy.start
-    repeaterRef = repeaterClient.repeaterFor("load-balancer", "localhost", 18000);
-    loadBalanceServer.register("load-balancer", actorOf(new RoundRobinActor(repeaterRef, List(remoteActorRef, otherRemoteActorRef))))
+    repeaterRef = repeaterClient.repeaterFor("remote-test-actor", "localhost", 18000);
+    loadBalanceServer.register("remote-test-actor", actorOf(new RoundRobinActor(repeaterRef, List(remoteActorRef, otherRemoteActorRef))))
 
   }
 
@@ -65,19 +67,83 @@ class ScaledReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAl
       RemoteClient.shutdownAll
     }
   }
-  describe("The Repeater") {
-    describe("when a message is sent to a load balancer") {
-      it("should be received by one of the idempotent receivers") {
+  describe("Network load balanced idempotent receivers") {
+    describe("when messages are sent to a load balancer") {
+      it("should be received by one of the idempotent receivers for that frame") {
 
-        for (i <- 1 to 10) {
+        for (i <- 1 to 9) {
           repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
-          if(i% 2 == 0){
-            otherBarrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
-          } else {
-            barrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
-          }
+          // all envelopes should be forwarded to one side (that owns the frame)
+          barrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
+          barrier.reset
+          assertReply(localActorRef,i)
         }
-        Thread.sleep(10000)
+        var frames = envelopes.getIncompleteFrames
+        frames should have size (1)
+        var incompleteFrame: Frame = null
+        for (frame <- frames) {
+          incompleteFrame = frame
+          envelopes.getEnvelopeIds(frame.id) should have size (9)
+          envelopes.isFrameComplete(frame.id) should be(false)
+        }
+        var otherFrames = otherEnvelopes.getIncompleteFrames
+        otherFrames should have size (0)
+
+        repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
+        // all envelopes should be forwarded to one side (that owns the frame)
+        barrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
+        barrier.reset
+        assertReply(localActorRef,10)
+
+        Thread.sleep(5000)
+        // should now be complete
+        otherFrames = otherEnvelopes.getIncompleteFrames
+        otherFrames should have size (0)
+        frames = envelopes.getIncompleteFrames
+        frames should have size (0)
+        envelopes.isFrameComplete(incompleteFrame.id) should be(true)
+        envelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
+        otherEnvelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
+      }
+      it("should receive another frame on the other idempotent receiver") {
+        // should now switch to the other idempotent server
+        for (i <- 1 to 9) {
+          repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
+          // all envelopes should be forwarded to one side (that owns the frame)
+          otherBarrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
+          otherBarrier.reset
+          assertReply(otherLocalActorRef,i)
+
+        }
+        envelopes.getIncompleteFrames should have size(0)
+        
+        var otherFrames = otherEnvelopes.getIncompleteFrames
+        otherFrames should have size (1)
+        var frames = envelopes.getIncompleteFrames
+        frames should have size (0)
+
+        var incompleteFrame: Frame = null
+        for (frame <- otherFrames) {
+          incompleteFrame = frame
+          otherEnvelopes.getEnvelopeIds(frame.id) should have size (9)
+          otherEnvelopes.isFrameComplete(frame.id) should be(false)
+        }
+        repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
+        // all envelopes should be forwarded to one side (that owns the frame)
+        otherBarrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
+        otherBarrier.reset
+        assertReply(otherLocalActorRef,10)
+        Thread.sleep(5000)
+
+        otherFrames = otherEnvelopes.getIncompleteFrames
+        otherFrames should have size (0)
+        frames = envelopes.getIncompleteFrames
+        frames should have size (0)
+        otherEnvelopes.isFrameComplete(incompleteFrame.id) should be(true)
+        envelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
+        otherEnvelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
+        assertReply(otherLocalActorRef,10)
+        assertReply(localActorRef,10)
       }
     }
   }
@@ -94,22 +160,30 @@ class ScaledReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAl
   }
 }
 
-class RoundRobinActor(sender:ActorRef, actors: List[ActorRef]) extends Actor {
+class RoundRobinActor(sender: ActorRef, actors: List[ActorRef]) extends Actor with Logging {
   var index = 0
+
+  def nextActor: Unit = {
+    index += 1
+    if (index > actors.size - 1) {
+      index = 0
+    }
+  }
+
   def receive = {
-    case msg: AnyRef => {
-      if(self.sender.isDefined){
-        val response = actors(index) !! msg
-        if(response.isDefined){
-          self.reply(response.get)
-        }
-      } else {
-        actors(index) ! msg
+    case msg: FrameRequestProtocol => {
+      log.info("sending frame request through to idempotent receiver %d", index)
+      val response = actors(index) !! msg
+      if (response.isDefined) {
+        log.info("sending reply back through load balancer")
+        self.reply(response.get)
       }
-      index += 1
-      if (index > actors.size - 1) {
-        index = 0
-      }
+      nextActor
+    }
+    case msg: Any => {
+      log.info("sending msg to idempotent receiver %d", index)
+      actors(index) ! msg
+      nextActor
     }
   }
 }

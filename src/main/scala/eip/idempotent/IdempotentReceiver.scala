@@ -8,36 +8,56 @@ import eip.idempotent.IdempotentProtocol._
 import collection.mutable.HashMap
 import java.net.InetAddress
 import se.scalablesolutions.akka.util.Logging
+import collection.JavaConversions.JConcurrentMapWrapper
+import java.util.concurrent.ConcurrentHashMap
+import com.eaio.uuid.UUID
 
 
 class IdempotentServer(envelopes: Envelopes, timeout: Int) {
-  val server = new RemoteServer
-  val repeatFrameRequester = actorOf(new RepeatFrameRequester(envelopes, timeout))
+  private val idempotentActors = new JConcurrentMapWrapper(new ConcurrentHashMap[String, ActorRef]())
+  private var _host = "localhost"
+  private var _port = 0
+  private val server = new RemoteServer
+  private val repeatFrameRequester = actorOf(new RepeatFrameRequester(envelopes, timeout))
   repeatFrameRequester.start
-  val listener = actorOf(new ReceiverConnectionListener(repeatFrameRequester, envelopes, timeout))
+  private val listener = actorOf(new ReceiverConnectionListener(repeatFrameRequester, envelopes, timeout))
   listener.start
   server.addListener(listener)
-
+  envelopes.setServer(this)
+  
   def start(host: String, port: Int) = {
     server.start(host, port)
+    _host = host
+    _port = port
+  }
+
+  def idempotentActorRef(remoteActorName: String):Option[ActorRef] = {
+    idempotentActors.get(remoteActorName)
   }
 
   def register(remoteActorName: String, actorRef: ActorRef): ActorRef = {
-    if (!actorRef.isRunning) {
-      actorRef.start
+    if (!idempotentActors.contains(remoteActorName)) {
+      if (!actorRef.isRunning) {
+        actorRef.start
+      }
+      val idempotentActorRef = actorOf(new IdempotentReceiver(Set(actorRef), envelopes, _host, _port))
+      idempotentActorRef.start
+      server.register(remoteActorName, idempotentActorRef)
+      idempotentActors+= remoteActorName ->idempotentActorRef
+      idempotentActorRef
+    } else {
+      throw new Exception("Remote Actor "+remoteActorName+" is already active as Idempotent Receiver")
     }
-    val idempotentActorRef = actorOf(new IdempotentReceiver(Set(actorRef), envelopes))
-    idempotentActorRef.start
-    server.register(remoteActorName, idempotentActorRef)
-    idempotentActorRef
   }
 
   def unregister(remoteActorName: String) = {
     server.unregister(remoteActorName);
+    idempotentActors.remove(remoteActorName)
   }
 
   def shutdown = {
     try {
+      envelopes.close
       server.removeListener(listener)
     } finally {
       server.shutdown
@@ -152,7 +172,7 @@ class RepeatFrameRequester(envelopes: Envelopes, timeout: Int) extends Actor wit
   }
 }
 
-class IdempotentReceiver(actors: Set[ActorRef], envelopes: Envelopes) extends Actor {
+class IdempotentReceiver(actors: Set[ActorRef], envelopes: Envelopes, host: String, port: Int) extends Actor {
   def completeFrame(envelope: Envelope): Unit = {
     val someFrame = envelopes.getFrame(envelope.frameId)
     someFrame match {
@@ -193,10 +213,11 @@ class IdempotentReceiver(actors: Set[ActorRef], envelopes: Envelopes) extends Ac
       val someValue = envelopes.get(envelope.frameId, envelope.id, payload)
       someValue match {
         case Some(envelope: Envelope) => {
-          log.debug("Ignored envelope %d, frame %d", envelope.id, envelope.frameId)
+          log.debug("Ignored envelope %d, frame %d, on %s:%d", envelope.id, envelope.frameId, host, port)
           // repeat the previous response, if it is a !! or !!!
         }
         case None => {
+          log.debug("Received new envelope %d, frame %d, on %s:%d", envelope.id, envelope.frameId, host, port)
           val complete = envelopes.put(envelope)
           for (actor <- actors) {
             actor ! payload
@@ -212,7 +233,7 @@ class IdempotentReceiver(actors: Set[ActorRef], envelopes: Envelopes) extends Ac
       val returnAddress = EnvelopeSerializer.fromProtocol(msg.getReturnAddress)
       val address = EnvelopeSerializer.fromProtocol(msg.getAddress)
       val frame = envelopes.nextFrame(returnAddress, address)
-      log.debug("Created new Frame for %s@%s:%d to %s@%s:%d, id %d, size %d.", frame.returnAddress.actor, frame.returnAddress.host, 
+      log.debug("Created new Frame for %s@%s:%d to %s@%s:%d, id %d, size %d.", frame.returnAddress.actor, frame.returnAddress.host,
         frame.returnAddress.port, frame.address.actor, frame.address.host, frame.address.port, frame.id, frame.size)
       self.reply(FrameResponseProtocol.newBuilder.setFrame(frame.toProtocol).build)
     }

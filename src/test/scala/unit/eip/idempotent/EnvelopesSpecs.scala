@@ -7,7 +7,7 @@ import eip.idempotent._
 
 class EnvelopesSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
   def createEnvelopes: Envelopes = {
-    new MemEnvelopes(10)
+    new MemEnvelopes(1,1000, 10)
   }
   describe("when all envelopes are added for the frame") {
     it("should be complete and possible to remove the frame") {

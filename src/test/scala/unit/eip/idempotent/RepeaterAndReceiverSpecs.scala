@@ -16,7 +16,7 @@ import java.net.Socket
 class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
   val repeaterServerProxy = new NetworkProxy("localhost", 17000, 17095)
   val proxy = new NetworkProxy("localhost", 18000, 18095)
-  val envelopes = new MemEnvelopes(10)
+  val envelopes = new MemEnvelopes(1,1000,10)
   val BARRIER_TIMEOUT = 5000
   val idempotentServer = new IdempotentServer(envelopes, 1000)
   val repeatBuffer = new MemRepeatBuffer
