@@ -25,6 +25,7 @@
       <sourceFolder url="file://$MODULE_DIR$/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test/resources" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/main/resources" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="scala 2.8.0" level="project" />

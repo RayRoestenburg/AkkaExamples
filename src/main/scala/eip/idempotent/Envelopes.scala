@@ -163,7 +163,9 @@ class MemEnvelopes(frameSize: Int) extends Envelopes {
 }
 
 /**
- * JGroupEnvelopes.Instead of distributing state,
+ * TODO implement hooks in JGroups to see crashes. maybe implement storage to select specific owner of frame, and takeover if not there 
+ * (need to check if owner gets message after restart)
+ * JGroupEnvelopes. Instead of distributing state,
  * the servers "own" frames that they have created, frames are in this way partitioned over the servers by frame Id.
  * if the server receives a frame that it does not own, it forwards it to all the other servers.
  */
@@ -171,7 +173,7 @@ class JGroupEnvelopes(configFile: File, source: Envelopes, cluster: String, time
   val SIZE_COMPLETED_FRAMES_HISTORY = 100;
   val lock = new Object()
   val recentlyCompletedFrameIds = new Queue[Int]
-  val channel = new JChannel(configFile)
+  val channel = new JChannel()// TODO configFile)
   channel.setReceiver(this);
   channel.connect(cluster);
   
