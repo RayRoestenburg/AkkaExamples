@@ -82,19 +82,19 @@ trait Envelopes {
 /**
  * In Memory Envelopes
  */
-class MemEnvelopes(frameIdStart: Int, frameIdEnd: Int, frameSize: Int) extends Envelopes {
+class MemEnvelopes(frameIdStart: Int, frameIdEnd: Int, frameSize: Int) extends Envelopes with Logging {
   private val envelopes = new JConcurrentMapWrapper(new ConcurrentHashMap[(Int, Int), Envelope])
   private val frameCounts = new JConcurrentMapWrapper(new ConcurrentHashMap[Int, Int])
   private val frames = new JConcurrentMapWrapper(new ConcurrentHashMap[Int, Frame])
   private var idempotentServer: IdempotentServer = null
 
   //TODO later extract 'next Frame' into a strategy
-  val ref = Ref(frameIdStart)
+  val ref = Ref(frameIdStart-1)
 
   def nextFrameId = atomic {
     var next = ref alter (_ + 1)
-    if (next == frameIdEnd) {
-      next = ref swap frameIdStart
+    if (next > frameIdEnd) {
+      next = ref alter ( _ => frameIdStart)
     }
     next
   }
@@ -184,11 +184,10 @@ class MemEnvelopes(frameIdStart: Int, frameIdEnd: Int, frameSize: Int) extends E
 }
 
 /**
- * TODO implement hooks in JGroups to see crashes. maybe implement storage to select specific owner of frame, and takeover if not there 
- * (need to check if owner gets message after restart)
  * JGroupEnvelopes. Instead of distributing state,
  * the servers "own" frames that they have created, frames are in this way partitioned over the servers by frame Id.
  * if the server receives a frame that it does not own, it forwards it to all the other servers.
+ * If a server has crashed, JGroups should retransmit until it is up again.
  */
 class JGroupEnvelopes(configFile: File, source: Envelopes, cluster: String, timeoutConnectCluster: Int) extends ReceiverAdapter with Envelopes with Logging {
   private var idempotentServer: IdempotentServer = null
@@ -196,7 +195,7 @@ class JGroupEnvelopes(configFile: File, source: Envelopes, cluster: String, time
   val SIZE_COMPLETED_FRAMES_HISTORY = 100;
   val lock = new Object()
   val recentlyCompletedFrameIds = new Queue[Int]
-  val channel = new JChannel() // TODO configFile)
+  val channel = new JChannel(configFile)
   channel.setReceiver(this);
   channel.connect(cluster);
 

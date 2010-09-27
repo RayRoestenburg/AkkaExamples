@@ -11,15 +11,17 @@ import se.scalablesolutions.akka.remote.{RemoteServer, RemoteClient}
 import unit.test.proto.Commands.WorkerCommand
 import java.util.concurrent.{TimeUnit, CyclicBarrier}
 import eip.idempotent.IdempotentProtocol.{FrameRequestProtocol, FrameResponseProtocol}
+import java.io.File
 
 class ScaledReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
   val repeaterServerProxy = new NetworkProxy("localhost", 17000, 17095)
   val proxy = new NetworkProxy("localhost", 18000, 18094)
-  val envelopes = new JGroupEnvelopes(null, new MemEnvelopes(1,10000, 10), "cluster-receivers", 10000)
+  val jgroupsConfigFile = new File("src/test/resources/jgroupsConfig.xml")
+  val envelopes = new JGroupEnvelopes(jgroupsConfigFile, new MemEnvelopes(1,10000, 10), "cluster-receivers", 10000)
   val BARRIER_TIMEOUT = 5000
   val idempotentServer = new IdempotentServer(envelopes, 1000)
 
-  val otherEnvelopes = new JGroupEnvelopes(null, new MemEnvelopes(20000,30000, 10), "cluster-receivers", 10000)
+  val otherEnvelopes = new JGroupEnvelopes(jgroupsConfigFile, new MemEnvelopes(20000,30000, 10), "cluster-receivers", 10000)
   val otherIdempotentServer = new IdempotentServer(otherEnvelopes, 1000)
 
   val repeatBuffer = new MemRepeatBuffer

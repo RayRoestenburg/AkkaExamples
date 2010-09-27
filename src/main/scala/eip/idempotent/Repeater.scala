@@ -145,6 +145,10 @@ class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
     case RemoteServerStarted(server: RemoteServer) => {
       repeat = true
     }
+    case RemoteClientStarted(server: RemoteClient) => {
+       repeat = true
+    }
+
     case RemoteServerClientConnected(server: RemoteServer) => {
     }
     case RemoteServerClientDisconnected(server: RemoteServer) => {
@@ -265,6 +269,13 @@ class Repeater(repeatBuffer: RepeatBuffer, returnAddress: Address, address: Addr
       } catch {
         case e: Exception => {
           log.error("Error requesting new frame(%s, %s,%d). retrying.", address.actor, address.host, address.port)
+          try {
+            RemoteClient.clientFor( address.host, address.port).connect
+          } catch {
+            case e:Exception => {
+              log.error("Error reconnecting to client before retry:%s",e.getMessage)
+            }
+          }
           Thread.sleep(timeout)
         }
       }
