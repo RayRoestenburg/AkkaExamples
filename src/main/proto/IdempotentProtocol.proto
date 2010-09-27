@@ -1,11 +1,11 @@
 package eip.idempotent;
-//Envelope, contains reference to frame, sender and payload
+
 message EnvelopeProtocol {
   required int32 id = 1;
   required int32 frameId = 2;
   optional PayloadProtocol payload = 3;
 }
-// Frame for communication of envelopes between a sender(returnAddress) and receiver (Address)
+
 message FrameProtocol {
   required int32 id =1;
   required int32 size=2;
@@ -14,46 +14,40 @@ message FrameProtocol {
   optional int32 count=5;
 }
 
-//Address of an actor
 message AddressProtocol {
   required string host = 1;
   required int32 port = 2;
   required string actor = 3;
 }
 
-// Payload, which is any encoded message, which is passed to the actor
 message PayloadProtocol {
   required SerializationSchemeType serializationScheme = 1;
   required bytes message = 2;
   optional bytes messageManifest = 3;
 }
-//Frame Request, will be made by sender (repeater), envelopes are always part of a frame
-//A frame is maintained between a returnAddress and an Address
+
 message FrameRequestProtocol {
   required AddressProtocol returnAddress = 1;
   required AddressProtocol address = 2;
 }
-//Frame Response from Idempotent Receiver
+
 message FrameResponseProtocol {
   required FrameProtocol frame = 3;
 }
-// Idempotent Receiver signals an incomplete frame on connection reconnect for incomplete frames
-// including envelope id's that have been received
+
 message RepeatFrameRequestProtocol {
   required FrameProtocol frame = 1;
   repeated int32 envelope = 3;
 }
-// Sender (Repeater) sends back Response to acknowledge RepeatFrameRequestProtocol
-// and to indicate that the envelopes id's in the request can be removed for the frame.
+
 message RepeatFrameResponseProtocol {
   required FrameProtocol frame = 1;
 }
 
-// Sent by IdempotentReceiver to Sender(Repeater) to indicate Frame Completed
 message CompleteFrameRequestProtocol {
   required FrameProtocol frame = 1;
 }
-// Acknowledgement from Sender (Repeater) on Frame Completed to Idempotent Receiver
+
 message CompleteFrameResponseProtocol {
   required FrameProtocol frame = 1;
 }
