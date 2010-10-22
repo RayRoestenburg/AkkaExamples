@@ -248,12 +248,15 @@ class Repeater(repeatBuffer: RepeatBuffer, returnAddress: Address, address: Addr
 
   def requestNewFrame(): Frame = {
     log.debug("Requesting new frame from actor %s, host %s, port %d", address.actor, address.host, address.port)
-    val actorRef = RemoteClient.actorFor(address.actor, address.host, address.port)
+    var actorRef = RemoteClient.actorFor(address.actor, address.host, address.port)
 
     var success = false
     var frame: Frame = null
     while (!success) {
       try {
+        if(actorRef.isShutdown){
+          actorRef = RemoteClient.actorFor(address.actor, address.host, address.port)
+        }
         val someResponse = actorRef !! FrameRequestProtocol.newBuilder.setAddress(address.toProtocol).setReturnAddress(returnAddress.toProtocol).build
         someResponse match {
           case Some(response: FrameResponseProtocol) => {

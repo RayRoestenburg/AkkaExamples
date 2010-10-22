@@ -154,9 +154,12 @@ class RepeatFrameRequester(envelopes: Envelopes, timeout: Int) extends Actor wit
         client.addListener(listener)
       }
 
-      val actorRef = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
+      var actorRef = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
       var success = false
       while (!success) {
+        if(actorRef.isShutdown){
+	  actorRef = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port) 
+        }
         val reply = actorRef !! (repeatFrame, timeout)
         reply match {
           case Some(response: RepeatFrameResponseProtocol) => {
@@ -179,12 +182,15 @@ class IdempotentReceiver(actors: Set[ActorRef], envelopes: Envelopes, host: Stri
       case Some(frame) => {
         spawn {
           log.debug("Completing frame %d to %s,%s,%d", frame.id, frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
-          val repeater = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
+          var repeater = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
 
           val completeFrameMsg = CompleteFrameRequestProtocol.newBuilder.setFrame(frame.toProtocol).build
           var success = false
 
           while (!success) {
+            if(repeater.isShutdown) {
+              repeater = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
+	    }
             val reply = repeater !! completeFrameMsg
             reply match {
               case Some(response: CompleteFrameResponseProtocol) => {
