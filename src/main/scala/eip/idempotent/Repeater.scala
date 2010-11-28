@@ -1,15 +1,16 @@
 package eip.idempotent
 
-import se.scalablesolutions.akka.actor.ActorRef
-import se.scalablesolutions.akka.remote._
-import se.scalablesolutions.akka.actor.Actor
-import se.scalablesolutions.akka.actor.Actor._
+import akka.actor.ActorRef
+import akka.remote._
+import akka.actor.Actor
+import akka.actor.Actor._
 import java.util.concurrent.ConcurrentHashMap
 import eip.idempotent.IdempotentProtocol._
 import collection.JavaConversions._
 import com.google.protobuf.Message
-import se.scalablesolutions.akka.util.Logging
+import akka.util.Logging
 import collection.immutable.TreeSet
+import java.net.InetSocketAddress
 
 trait RepeatBuffer {
   def addFrame(frame: Frame)
@@ -149,9 +150,9 @@ class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
        repeat = true
     }
 
-    case RemoteServerClientConnected(server: RemoteServer) => {
+    case RemoteServerClientConnected(server: RemoteServer, address: Option[InetSocketAddress]) => {
     }
-    case RemoteServerClientDisconnected(server: RemoteServer) => {
+    case RemoteServerClientDisconnected(server: RemoteServer, clientAddress: Option[InetSocketAddress] ) => {
       repeat = true
     }
 

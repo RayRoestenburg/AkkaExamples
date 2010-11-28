@@ -2,8 +2,8 @@ package unit.eip.idempotent
 
 import java.util.concurrent.CyclicBarrier
 import collection.mutable.HashMap
-import se.scalablesolutions.akka.actor.Actor
-import se.scalablesolutions.akka.actor.Actor._
+import akka.actor.Actor
+import akka.actor.Actor._
 import unit.test.proto.Commands.WorkerCommand
 
 case class TestOneWay(data: String)

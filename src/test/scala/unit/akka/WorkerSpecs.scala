@@ -1,8 +1,8 @@
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
 
-import se.scalablesolutions.akka.actor.{Actor}
-import se.scalablesolutions.akka.actor.Actor._
+import akka.actor.{Actor}
+import akka.actor.Actor._
 
 /**
  * A Spec for an example Worker Actor.

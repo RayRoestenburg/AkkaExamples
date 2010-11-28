@@ -1,6 +1,6 @@
 package unit.eip.idempotent
 
-import se.scalablesolutions.akka.util.Logging
+import akka.util.Logging
 import org.scalatest.{Spec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import eip.idempotent._

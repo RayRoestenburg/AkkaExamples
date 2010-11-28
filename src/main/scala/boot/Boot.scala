@@ -1,6 +1,6 @@
 package boot
 
-import se.scalablesolutions.akka.actor.Actor._
+import akka.actor.Actor._
 
 /**
  * Boot class. not implemented yet.

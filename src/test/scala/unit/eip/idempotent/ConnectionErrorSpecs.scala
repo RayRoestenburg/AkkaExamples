@@ -1,16 +1,16 @@
 package unit.eip.idempotent
 
 import org.scalatest.matchers.ShouldMatchers
-import se.scalablesolutions.akka.util.Logging
+import akka.util.Logging
 import org.scalatest.{BeforeAndAfterAll, Spec}
 import tools.NetworkProxy
-import se.scalablesolutions.akka.actor.Actor._
+import akka.actor.Actor._
 import collection.mutable.HashMap
 import java.util.concurrent.{TimeUnit, CyclicBarrier}
-import se.scalablesolutions.akka.actor.{ActorRef, Actor}
-import se.scalablesolutions.akka.remote._
-import java.net.Socket
+import akka.actor.{ActorRef, Actor}
+import akka.remote._
 import java.io.{InputStream, OutputStream}
+import java.net.{InetSocketAddress, Socket}
 
 /**
  * Test what happens in case of Connection Errors, using a simple Network Proxy that is used to disconnect 'the network'
@@ -224,12 +224,12 @@ class ConnectionListenerActor extends Actor {
       log.info("listener: server started.")
       countEvent("server-started")
     }
-    case RemoteServerClientConnected(server) => {
+    case RemoteServerClientConnected(server, clientAddresss : Option[InetSocketAddress]) => {
       log.info("listener: client connected to server.")
       countEvent("server-client-connected")
 
     }
-    case RemoteServerClientDisconnected(server) => {
+    case RemoteServerClientDisconnected(server, clientAddresss : Option[InetSocketAddress]) => {
       log.info("listener: client disconnected from server.")
       countEvent("server-client-disconnected")
     }

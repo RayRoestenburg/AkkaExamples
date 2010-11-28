@@ -2,15 +2,15 @@ package eip.idempotent
 
 import java.lang.String
 import org.jgroups.{Message, ReceiverAdapter, JChannel}
-import se.scalablesolutions.akka.stm.local._
+import akka.stm._
 import collection.JavaConversions.JConcurrentMapWrapper
 import eip.idempotent.IdempotentProtocol.EnvelopeProtocol
 import collection.mutable.Queue
 import java.util.concurrent.ConcurrentHashMap
 import java.io.{ObjectOutput, ObjectInput, Externalizable, File}
-import se.scalablesolutions.akka.util.Logging
-import se.scalablesolutions.akka.actor.ActorRegistry
-import se.scalablesolutions.akka.remote.{RemoteServer, RemoteClient}
+import akka.util.Logging
+import akka.actor.ActorRegistry
+import akka.remote.{RemoteServer, RemoteClient}
 
 /**
  * Keeps track of Envelopes on the Idempotent Receiver side

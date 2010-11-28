@@ -1,11 +1,11 @@
 package unit.akka
 
-import se.scalablesolutions.akka.util.Logging
+import akka.util.Logging
 import org.scalatest.{Spec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
-import se.scalablesolutions.akka.remote.{RemoteClient, RemoteServer}
-import se.scalablesolutions.akka.actor.Actor._
-import se.scalablesolutions.akka.actor.Actor
+import akka.remote.{RemoteClient, RemoteServer}
+import akka.actor.Actor._
+import akka.actor.Actor
 import java.util.concurrent.CyclicBarrier
 
 class RemoteClientTest extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {

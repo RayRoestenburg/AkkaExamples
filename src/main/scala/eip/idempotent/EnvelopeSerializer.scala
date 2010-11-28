@@ -1,6 +1,6 @@
 package eip.idempotent
 
-import se.scalablesolutions.akka.serialization.Serializer
+import akka.serialization.Serializer
 import com.google.protobuf.{ByteString, Message}
 import eip.idempotent.IdempotentProtocol.{FrameProtocol, AddressProtocol, PayloadProtocol, EnvelopeProtocol}
 

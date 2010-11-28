@@ -1,13 +1,13 @@
 package unit.eip.idempotent
 
-import se.scalablesolutions.akka.util.Logging
+import akka.util.Logging
 import eip.idempotent._
 import tools.NetworkProxy
 import org.scalatest.{Spec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
-import se.scalablesolutions.akka.actor.{Actor, ActorRef}
-import se.scalablesolutions.akka.actor.Actor._
-import se.scalablesolutions.akka.remote.{RemoteServer, RemoteClient}
+import akka.actor.{Actor, ActorRef}
+import akka.actor.Actor._
+import akka.remote.{RemoteServer, RemoteClient}
 import unit.test.proto.Commands.WorkerCommand
 import java.util.concurrent.{TimeUnit, CyclicBarrier}
 import eip.idempotent.IdempotentProtocol.{FrameRequestProtocol, FrameResponseProtocol}

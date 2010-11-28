@@ -1,16 +1,16 @@
 package eip.idempotent
 
-import se.scalablesolutions.akka.actor.Actor._
-import se.scalablesolutions.akka.remote._
-import se.scalablesolutions.akka.actor.{ActorRef, Actor}
+import akka.actor.Actor._
+import akka.remote._
+import akka.actor.{ActorRef, Actor}
 import java.lang.String
 import eip.idempotent.IdempotentProtocol._
 import collection.mutable.HashMap
-import java.net.InetAddress
-import se.scalablesolutions.akka.util.Logging
+import akka.util.Logging
 import collection.JavaConversions.JConcurrentMapWrapper
 import java.util.concurrent.ConcurrentHashMap
 import com.eaio.uuid.UUID
+import java.net.{InetSocketAddress, InetAddress}
 
 
 class IdempotentServer(envelopes: Envelopes, timeout: Int) {
@@ -102,7 +102,7 @@ class ReceiverConnectionListener(repeatFrameRequester: ActorRef, envelopes: Enve
       // start handling incomplete requests at startup (if envelopes are persistent)
       repeatFrameRequester ! ReconnectServer(self, server)
     }
-    case RemoteServerClientConnected(server) => {
+    case RemoteServerClientConnected(server, address : Option[InetSocketAddress]) => {
       log.debug("Remote Server Client connected to server %s", server.name)
       if (serverDisconnected || serverError) {
         // connected after disconnected
@@ -111,7 +111,7 @@ class ReceiverConnectionListener(repeatFrameRequester: ActorRef, envelopes: Enve
         serverError = false
       }
     }
-    case RemoteServerClientDisconnected(server: RemoteServer) => {
+    case RemoteServerClientDisconnected(server: RemoteServer, clientAddress : Option[InetSocketAddress]) => {
       log.debug("Remote Server Client disconnected to server %s", server.name)
       // set flag for disconnect of clients
       serverDisconnected = true

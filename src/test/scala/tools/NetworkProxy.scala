@@ -1,9 +1,9 @@
 package tools
 
 import java.util.concurrent.CyclicBarrier
-import se.scalablesolutions.akka.util.Logging
+import akka.util.Logging
 import java.io._
-import se.scalablesolutions.akka.actor.Actor._
+import akka.actor.Actor._
 import java.net.{SocketException, ServerSocket, Socket}
 
 /**

@@ -1,11 +1,11 @@
 package unit.akka
 
-import se.scalablesolutions.akka.actor.Actor
-import se.scalablesolutions.akka.actor.Actor._
+import akka.actor.Actor
+import akka.actor.Actor._
 import org.scalatest.{BeforeAndAfterAll, Spec}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import se.scalablesolutions.akka.remote.{RemoteClient, RemoteServer}
+import akka.remote.{RemoteClient, RemoteServer}
 import org.scalatest.matchers.{MustMatchers, ShouldMatchers}
 import unit.test.proto.Commands
 import unit.test.proto.Commands.WorkerCommand
