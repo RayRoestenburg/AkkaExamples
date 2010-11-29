@@ -2,7 +2,7 @@ import sbt._
 import Process._
 import sbt_akka_bivy._
 class Project(info: ProjectInfo) extends DefaultProject(info) with AkkaProject with AkkaKernelDeployment{
-   val AkkaRepo = "Akka Repository" at "http://scalablesolutions.se/akka/repository"
+  val AkkaRepo = "Akka Repository" at "http://scalablesolutions.se/akka/repository"
   val akkaCamel = akkaModule("camel")
   val akkaKernel = akkaModule("kernel")
   val akkaRedis = akkaModule("persistence-redis")
@@ -16,7 +16,8 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with AkkaProject w
   val scalatest = "org.scalatest" % "scalatest" % "1.2-for-scala-2.8.0.final-SNAPSHOT" % "test->default"
   override def repositories = Set(
       "tools-snapshots" at "http://scala-tools.org/repo-snapshots/",
-      "jboss" at "http://repository.jboss.org/maven2"
+      "jboss" at "http://repository.jboss.org/maven2",
+      "fusesource" at "http://repo.fusesource.com/maven2-all"
   ) 
  
   // dont include integration and performance tests by default.
