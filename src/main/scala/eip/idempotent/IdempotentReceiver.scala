@@ -12,7 +12,9 @@ import java.util.concurrent.ConcurrentHashMap
 import com.eaio.uuid.UUID
 import java.net.{InetSocketAddress, InetAddress}
 
-
+/**
+ * Idempotent server. wraps Actors into IdempotentReceiver Actors so that they can be accessed with the RepeaterClient.
+ */
 class IdempotentServer(envelopes: Envelopes, timeout: Int) {
   private val idempotentActors = new JConcurrentMapWrapper(new ConcurrentHashMap[String, ActorRef]())
   private var _host = "localhost"
@@ -75,6 +77,9 @@ class IdempotentServer(envelopes: Envelopes, timeout: Int) {
   }
 }
 
+/**
+ * Connection Listener that triggers requests to the repeater, to repeat frame because an error has occurred.
+ */
 class ReceiverConnectionListener(repeatFrameRequester: ActorRef, envelopes: Envelopes, timeout: Int) extends Actor {
   private var serverError = false
   private var serverDisconnected = false
@@ -134,10 +139,11 @@ class ReceiverConnectionListener(repeatFrameRequester: ActorRef, envelopes: Enve
 }
 
 case class ReconnectServer(listener: ActorRef, server: RemoteServerModule)
-
 case class ReconnectClient(listener: ActorRef, client: RemoteClientModule)
 
-
+/**
+ * Requests the repeater to repeat frames when there is a reconnect
+ */
 class RepeatFrameRequester(envelopes: Envelopes, timeout: Int) extends Actor with Logging {
   private var clients = Set[Address]()
 
@@ -189,6 +195,10 @@ class RepeatFrameRequester(envelopes: Envelopes, timeout: Int) extends Actor wit
   }
 }
 
+/**
+ * Idempotent Receiver. ignores duplicate messages, handles frame requests and communicates with
+ * the repeater when frames are completed. Only works for oneway messages at the moment.
+ */
 class IdempotentReceiver(actors: Set[ActorRef], envelopes: Envelopes, host: String, port: Int) extends Actor {
   def completeFrame(envelope: Envelope): Unit = {
     val someFrame = envelopes.getFrame(envelope.frameId)

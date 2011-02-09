@@ -12,6 +12,9 @@ import collection.immutable.TreeSet
 import java.net.InetSocketAddress
 import akka.remoteinterface._
 
+/**
+ * Buffer for the Repeater
+ */
 trait RepeatBuffer {
   def addFrame(frame: Frame)
 
@@ -34,6 +37,9 @@ trait RepeatBuffer {
   def sizeFrames: Int
 }
 
+/**
+ * In memory implementation of the RepeatBuffer
+ */
 class MemRepeatBuffer extends RepeatBuffer {
   val messages = new JConcurrentMapWrapper(new ConcurrentHashMap[Int, EnvelopeProtocol])
   val frames = new JConcurrentMapWrapper(new ConcurrentHashMap[Int, Frame])
@@ -89,6 +95,10 @@ class MemRepeatBuffer extends RepeatBuffer {
   def sizeFrames = frames.size
 }
 
+/**
+ * Listens to errors on the connection from the Repeater side and handles requests from the IdempotentReceiver
+ * for completing frames and repeat requests
+ */
 class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
   var repeat = false
 
@@ -185,6 +195,9 @@ class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
 
 case class RepeaterKey(remoteActor: String, returnAddress: Address, address: Address)
 
+/**
+ * Client to the idempotent remote actors. starts a remote server module for receiving messages from the Idempotent Receiver side
+ */
 class RepeaterClient(returnAddress: Address, repeatBuffer: RepeatBuffer, timeout: Int) extends Logging {
   private val repeaters = new JConcurrentMapWrapper(new ConcurrentHashMap[RepeaterKey, ActorRef])
   private val listenerRef = actorOf(new RepeaterConnectionListener(repeatBuffer))
@@ -242,6 +255,10 @@ class RepeaterClient(returnAddress: Address, repeatBuffer: RepeatBuffer, timeout
   }
 }
 
+/**
+ * Repeater actor. requests frames, creates envelopes around messages and delegates these to a RemoteActorRef to the
+ * IdempotentReceiver
+ */
 class Repeater(repeatBuffer: RepeatBuffer, returnAddress: Address, address: Address, timeout: Int) extends Actor {
   private var currentFrame: Frame = null
 
