@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.io.{ObjectOutput, ObjectInput, Externalizable, File}
 import akka.util.Logging
 import akka.actor.ActorRegistry
-import akka.remote.{RemoteServer, RemoteClient}
 
 /**
  * Keeps track of Envelopes on the Idempotent Receiver side

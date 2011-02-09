@@ -5,7 +5,6 @@ import akka.actor.Actor._
 import org.scalatest.{BeforeAndAfterAll, Spec}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import akka.remote.{RemoteClient, RemoteServer}
 import org.scalatest.matchers.{MustMatchers, ShouldMatchers}
 import unit.test.proto.Commands
 import unit.test.proto.Commands.WorkerCommand
@@ -16,15 +15,15 @@ import unit.akka.CommandBuilder._
  */
 @RunWith(classOf[JUnitRunner])
 class ProtobufSpecs extends Spec with BeforeAndAfterAll with MustMatchers {
-  var server: RemoteServer = new RemoteServer()
+  var server = remote
 
   override def beforeAll(configMap: Map[String, Any]) {
     server.start("127.0.0.1", 8091)
   }
 
   override def afterAll(configMap: Map[String, Any]) {
-    RemoteClient.shutdownAll
-    server.shutdown
+    remote.shutdownClientModule
+    server.shutdownServerModule
   }
 
   describe("Send using Protobuf protocol") {
@@ -51,7 +50,7 @@ class ProtobufSpecs extends Spec with BeforeAndAfterAll with MustMatchers {
       //register the actor that can be remotely accessed
       server.register("protobuftest", actor)
       val msg = Worker(2, "my-name-2", "my-data-2")
-      val result: Option[Any] = RemoteClient.actorFor("protobuftest", "127.0.0.1", 8091) !! msg
+      val result: Option[Any] = remote.actorFor("protobuftest", "127.0.0.1", 8091) !! msg
 
       result match {
         case Some(reply: Commands.WorkerCommand) => {

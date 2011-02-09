@@ -69,7 +69,7 @@ class Aggregator(pass: ActorRef) extends Actor {
   def receive = {
     case msg: SecondMessage => {
       println("Aggregator, my data is " + msg.data)
-      val firstMessageHandler: ActorRef = ActorRegistry.actorsFor(classOf[FirstMessageHandler]).head
+      val firstMessageHandler: ActorRef = registry.actorsFor(classOf[FirstMessageHandler]).head
       var reply: Option[Any] = firstMessageHandler !! new GiveMeLastMessage
       if (reply.isDefined) {
         val first: FirstMessage = reply.get.asInstanceOf[FirstMessage]
@@ -91,7 +91,7 @@ class SecondMessageHandler extends Actor {
       // do some processing
       println("Secondmessage, my data is " + msg.data)
       // then call the aggregator
-      val aggregator: ActorRef = ActorRegistry.actorsFor(classOf[Aggregator]).head
+      val aggregator: ActorRef = registry.actorsFor(classOf[Aggregator]).head
       aggregator ! msg
     }
   }

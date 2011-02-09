@@ -1,7 +1,7 @@
 package eip.idempotent
 
 import akka.actor.Actor._
-import akka.remote._
+import akka.remoteinterface._
 import akka.actor.{ActorRef, Actor}
 import java.lang.String
 import eip.idempotent.IdempotentProtocol._
@@ -17,21 +17,31 @@ class IdempotentServer(envelopes: Envelopes, timeout: Int) {
   private val idempotentActors = new JConcurrentMapWrapper(new ConcurrentHashMap[String, ActorRef]())
   private var _host = "localhost"
   private var _port = 0
-  private val server = new RemoteServer
+  var remoteModule = remote
   private val repeatFrameRequester = actorOf(new RepeatFrameRequester(envelopes, timeout))
   repeatFrameRequester.start
   private val listener = actorOf(new ReceiverConnectionListener(repeatFrameRequester, envelopes, timeout))
   listener.start
-  server.addListener(listener)
   envelopes.setServer(this)
-  
+
   def start(host: String, port: Int) = {
-    server.start(host, port)
-    _host = host
-    _port = port
+    if (!remoteModule.isRunning) {
+      remoteModule.addListener(listener)
+      remoteModule.start(host, port)
+      _host = host
+      _port = port
+    }
+  }
+  def start(host: String, port: Int, loader :ClassLoader) = {
+    if (!remoteModule.isRunning) {
+      remoteModule.addListener(listener)
+      remoteModule.start(host, port,loader)
+      _host = host
+      _port = port
+    }
   }
 
-  def idempotentActorRef(remoteActorName: String):Option[ActorRef] = {
+  def idempotentActorRef(remoteActorName: String): Option[ActorRef] = {
     idempotentActors.get(remoteActorName)
   }
 
@@ -42,25 +52,25 @@ class IdempotentServer(envelopes: Envelopes, timeout: Int) {
       }
       val idempotentActorRef = actorOf(new IdempotentReceiver(Set(actorRef), envelopes, _host, _port))
       idempotentActorRef.start
-      server.register(remoteActorName, idempotentActorRef)
-      idempotentActors+= remoteActorName ->idempotentActorRef
+      remote.register(remoteActorName, idempotentActorRef)
+      idempotentActors += remoteActorName -> idempotentActorRef
       idempotentActorRef
     } else {
-      throw new Exception("Remote Actor "+remoteActorName+" is already active as Idempotent Receiver")
+      throw new Exception("Remote Actor " + remoteActorName + " is already active as Idempotent Receiver")
     }
   }
 
   def unregister(remoteActorName: String) = {
-    server.unregister(remoteActorName);
+    remoteModule.unregister(remoteActorName);
     idempotentActors.remove(remoteActorName)
   }
 
   def shutdown = {
     try {
       envelopes.close
-      server.removeListener(listener)
+      remoteModule.removeListener(listener)
     } finally {
-      server.shutdown
+      remoteModule.shutdown
     }
   }
 }
@@ -72,26 +82,28 @@ class ReceiverConnectionListener(repeatFrameRequester: ActorRef, envelopes: Enve
   private var clientError = false
 
   def receive = {
-    case RemoteClientError(cause, client: RemoteClient) => {
+    case RemoteClientError(cause, client: RemoteClientModule, remoteAddress) => {
       clientError = true;
     }
-    case RemoteClientDisconnected(client: RemoteClient) => {
-      log.debug("Remote client %s:%d disconnected from receiver", client.hostname, client.port)
+    case RemoteClientDisconnected(client: RemoteClientModule, remoteAddress: InetSocketAddress) => {
+      log.debug("Remote client %s:%d disconnected from receiver", remoteAddress.getHostName, remoteAddress.getPort)
       clientDisconnected = true
     }
-    case RemoteClientConnected(client: RemoteClient) => {
+    case RemoteClientConnected(client: RemoteClientModule, remoteAddress: InetSocketAddress) => {
       if (clientDisconnected || clientError) {
-        log.debug("Remote client %s:%d reconnected to receiver", client.hostname, client.port)
+        log.debug("Remote client %s:%d reconnected to receiver", remoteAddress.getHostName, remoteAddress.getPort)
         // connected after disconnect or error
         repeatFrameRequester ! ReconnectClient(self, client)
         clientError = false
         clientDisconnected = false
       }
     }
-    case RemoteClientShutdown(client) => {
+    case RemoteClientShutdown(client, remoteAddress) => {
     }
-
-    case RemoteServerError(cause, server: RemoteServer) => {
+    case RemoteClientWriteFailed(request, error: Throwable, client: RemoteClientModule, address: InetSocketAddress) => {
+      clientError = true
+    }
+    case RemoteServerError(cause, server: RemoteServerModule) => {
       log.debug("Remote Server error on receiver %s", server.name)
       serverError = true
     }
@@ -102,7 +114,7 @@ class ReceiverConnectionListener(repeatFrameRequester: ActorRef, envelopes: Enve
       // start handling incomplete requests at startup (if envelopes are persistent)
       repeatFrameRequester ! ReconnectServer(self, server)
     }
-    case RemoteServerClientConnected(server, address : Option[InetSocketAddress]) => {
+    case RemoteServerClientConnected(server, address: Option[InetSocketAddress]) => {
       log.debug("Remote Server Client connected to server %s", server.name)
       if (serverDisconnected || serverError) {
         // connected after disconnected
@@ -111,15 +123,19 @@ class ReceiverConnectionListener(repeatFrameRequester: ActorRef, envelopes: Enve
         serverError = false
       }
     }
-    case RemoteServerClientDisconnected(server: RemoteServer, clientAddress : Option[InetSocketAddress]) => {
+    case RemoteServerClientClosed(server: RemoteServerModule, clientAddress: Option[InetSocketAddress]) => {
+    }
+    case RemoteServerClientDisconnected(server: RemoteServerModule, clientAddress: Option[InetSocketAddress]) => {
       log.debug("Remote Server Client disconnected to server %s", server.name)
       // set flag for disconnect of clients
       serverDisconnected = true
     }
   }
 }
-case class ReconnectServer(listener: ActorRef, server: RemoteServer)
-case class ReconnectClient(listener: ActorRef, client: RemoteClient)
+
+case class ReconnectServer(listener: ActorRef, server: RemoteServerModule)
+
+case class ReconnectClient(listener: ActorRef, client: RemoteClientModule)
 
 
 class RepeatFrameRequester(envelopes: Envelopes, timeout: Int) extends Actor with Logging {
@@ -147,18 +163,16 @@ class RepeatFrameRequester(envelopes: Envelopes, timeout: Int) extends Actor wit
       }
       val repeatFrame = builder.setFrame(frameProtocol).build
 
-      val client = RemoteClient.clientFor(frame.returnAddress.host, frame.returnAddress.port)
-
       if (!clients.contains(frame.returnAddress)) {
         clients = clients + frame.returnAddress
-        client.addListener(listener)
+        remote.addListener(listener)
       }
 
-      var actorRef = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
+      var actorRef = remote.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
       var success = false
       while (!success) {
-        if(actorRef.isShutdown){
-	  actorRef = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port) 
+        if (actorRef.isShutdown) {
+          actorRef = remote.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
         }
         val reply = actorRef !! (repeatFrame, timeout)
         reply match {
@@ -180,17 +194,17 @@ class IdempotentReceiver(actors: Set[ActorRef], envelopes: Envelopes, host: Stri
     val someFrame = envelopes.getFrame(envelope.frameId)
     someFrame match {
       case Some(frame) => {
-        spawn {
+        spawn{
           log.debug("Completing frame %d to %s,%s,%d", frame.id, frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
-          var repeater = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
+          var repeater = remote.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
 
           val completeFrameMsg = CompleteFrameRequestProtocol.newBuilder.setFrame(frame.toProtocol).build
           var success = false
 
           while (!success) {
-            if(repeater.isShutdown) {
-              repeater = RemoteClient.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
-	    }
+            if (repeater.isShutdown) {
+              repeater = remote.actorFor(frame.returnAddress.actor, frame.returnAddress.host, frame.returnAddress.port)
+            }
             val reply = repeater !! completeFrameMsg
             reply match {
               case Some(response: CompleteFrameResponseProtocol) => {

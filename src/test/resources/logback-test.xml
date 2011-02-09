@@ -30,8 +30,7 @@
         </encoder>
     </appender>
     <logger name="se.scalablesolutions" level="INFO"/>
-    <root level="DEBUG">
-        <appender-ref ref="stdout"/>
+    <root level="INFO">
         <appender-ref ref="file"/>
     </root>
 </configuration>

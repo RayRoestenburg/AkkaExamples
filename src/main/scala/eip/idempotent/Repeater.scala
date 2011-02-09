@@ -1,7 +1,6 @@
 package eip.idempotent
 
 import akka.actor.ActorRef
-import akka.remote._
 import akka.actor.Actor
 import akka.actor.Actor._
 import java.util.concurrent.ConcurrentHashMap
@@ -11,6 +10,7 @@ import com.google.protobuf.Message
 import akka.util.Logging
 import collection.immutable.TreeSet
 import java.net.InetSocketAddress
+import akka.remoteinterface._
 
 trait RepeatBuffer {
   def addFrame(frame: Frame)
@@ -92,16 +92,16 @@ class MemRepeatBuffer extends RepeatBuffer {
 class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
   var repeat = false
 
-  def repeatClient(client: RemoteClient): Unit = {
-    val frames = repeatBuffer.getFrames(client.hostname, client.port)
+  def repeatClient(remoteAddress: InetSocketAddress): Unit = {
+    val frames = repeatBuffer.getFrames(remoteAddress.getHostName(), remoteAddress.getPort())
 
     if (!frames.isEmpty) {
-      log.info("Repeating messages for client(%s:%d)", client.hostname, client.port)
+      log.info("Repeating messages for client(%s:%d)", remoteAddress.getHostName(), remoteAddress.getPort())
     }
     for (frame <- frames) {
       val envelopes = repeatBuffer.getEnvelopes(frame.id)
       for (envelope <- envelopes) {
-        val actorRef = RemoteClient.actorFor(frame.address.actor, frame.address.host, frame.address.port)
+        val actorRef = remote.actorFor(frame.address.actor, frame.address.host, frame.address.port)
         actorRef ! envelope
       }
     }
@@ -109,53 +109,57 @@ class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
 
   def repeatFrame(frame: Frame): Unit = {
     val envelopes = repeatBuffer.getEnvelopes(frame.id)
-    var sorted = new TreeSet()(Ordering.by((_:EnvelopeProtocol).getId).reverse)
+    var sorted = new TreeSet()(Ordering.by((_: EnvelopeProtocol).getId).reverse)
     sorted = sorted ++ envelopes
 
     for (envelope <- sorted) {
-      val actorRef = RemoteClient.actorFor(frame.address.actor, frame.address.host, frame.address.port)
+      val actorRef = remote.actorFor(frame.address.actor, frame.address.host, frame.address.port)
       actorRef ! envelope
     }
   }
 
   def receive = {
     //remote client events
-    case RemoteClientError(cause, client: RemoteClient) => {
-      log.debug("Remote client(%s:%d) error", client.hostname, client.port)
+    case RemoteClientError(cause, client: RemoteClientModule, remoteAddress: InetSocketAddress) => {
+      log.debug("Remote client(%s:%d) error", remoteAddress.getHostName, remoteAddress.getPort)
       repeat = true
     }
-    case RemoteClientDisconnected(client: RemoteClient) => {
-      log.debug("client(%s:%d) disconnected", client.hostname, client.port)
+    case RemoteClientWriteFailed(request, error: Throwable, client: RemoteClientModule, address: InetSocketAddress) => {
+      log.debug("Remote client(%s:%d) write failed", address.getHostName, address.getPort)
       repeat = true
     }
-    case RemoteClientConnected(client: RemoteClient) => {
+
+    case RemoteClientDisconnected(client: RemoteClientModule, remoteAddress: InetSocketAddress) => {
+      log.debug("client(%s:%d) disconnected", remoteAddress.getHostName, remoteAddress.getPort)
+      repeat = true
+    }
+    case RemoteClientConnected(client: RemoteClientModule, remoteAddress: InetSocketAddress) => {
       if (repeat) {
-        log.debug("client(%s:%d) reconnected after error, startup or disconnect", client.hostname, client.port)
-        repeatClient(client)
+        log.debug("client(%s:%d) reconnected after error, startup or disconnect", remoteAddress.getHostName, remoteAddress.getPort)
+        repeatClient(remoteAddress)
         repeat = false
       }
     }
-    case RemoteClientShutdown(client: RemoteClient) => {
+    case RemoteClientStarted(client, address) => {
+    }
+    case RemoteClientShutdown(client: RemoteClientModule, remoteAddress: InetSocketAddress) => {
     }
     //remote server events
-    case RemoteServerError(cause, server: RemoteServer) => {
+    case RemoteServerError(cause, server: RemoteServerModule) => {
       repeat = true
     }
-    case RemoteServerShutdown(server: RemoteServer) => {
+    case RemoteServerShutdown(server: RemoteServerModule) => {
     }
-    case RemoteServerStarted(server: RemoteServer) => {
+    case RemoteServerStarted(server: RemoteServerModule) => {
       repeat = true
     }
-    case RemoteClientStarted(server: RemoteClient) => {
-       repeat = true
+    case RemoteServerClientClosed(server: RemoteServerModule, address: Option[InetSocketAddress]) => {
     }
-
-    case RemoteServerClientConnected(server: RemoteServer, address: Option[InetSocketAddress]) => {
+    case RemoteServerClientConnected(server: RemoteServerModule, address: Option[InetSocketAddress]) => {
     }
-    case RemoteServerClientDisconnected(server: RemoteServer, clientAddress: Option[InetSocketAddress] ) => {
+    case RemoteServerClientDisconnected(server: RemoteServerModule, clientAddress: Option[InetSocketAddress]) => {
       repeat = true
     }
-
     // idempotent protocol
     case msg: RepeatFrameRequestProtocol => {
       log.debug("Received RepeatFrameRequest of frame %d,  ", msg.getFrame.getId)
@@ -164,7 +168,7 @@ class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
       for (id <- ids) {
         repeatBuffer.removeEnvelope(id.intValue)
       }
-      spawn {
+      spawn{
         log.debug("Repeating frame %d on RepeatFrameRequest  ", msg.getFrame.getId)
         repeatFrame(frame)
       }
@@ -178,25 +182,37 @@ class RepeaterConnectionListener(repeatBuffer: RepeatBuffer) extends Actor {
     }
   }
 }
+
 case class RepeaterKey(remoteActor: String, returnAddress: Address, address: Address)
 
 class RepeaterClient(returnAddress: Address, repeatBuffer: RepeatBuffer, timeout: Int) extends Logging {
   private val repeaters = new JConcurrentMapWrapper(new ConcurrentHashMap[RepeaterKey, ActorRef])
-  private val server = new RemoteServer
   private val listenerRef = actorOf(new RepeaterConnectionListener(repeatBuffer))
   listenerRef.start
-  server.addListener(listenerRef)
+  remote.addListener(listenerRef)
+
+  def start(host: String, port: Int, loader:ClassLoader) = {
+    log.info("Starting server for repeater on %s, %d", host, port)
+    if (!remote.isRunning) {
+      remote.start(host, port,loader)
+    }
+    remote.register(returnAddress.actor, listenerRef)
+  }
 
   def start(host: String, port: Int) = {
     log.info("Starting server for repeater on %s, %d", host, port)
-    server.start(host, port)
-    server.register(returnAddress.actor, listenerRef)
+    if (!remote.isRunning) {
+      remote.start(host, port)
+    }
+    remote.register(returnAddress.actor, listenerRef)
   }
 
   def start = {
     log.info("Starting server for repeater on %s, %d", returnAddress.host, returnAddress.port)
-    server.start(returnAddress.host, returnAddress.port)
-    server.register(returnAddress.actor, listenerRef)
+    if (!remote.isRunning) {
+      remote.start(returnAddress.host, returnAddress.port)
+    }
+    remote.register(returnAddress.actor, listenerRef)
   }
 
   def repeaterFor(remoteActor: String, host: String, port: Int): ActorRef = {
@@ -205,8 +221,7 @@ class RepeaterClient(returnAddress: Address, repeatBuffer: RepeatBuffer, timeout
       val address = new Address(host, port, remoteActor)
       log.debug("Creating new repeater for remote actor %s, returnAddress %s@%s:%d, address %s@%s:%d",
         remoteActor, returnAddress.actor, returnAddress.host, returnAddress.port, address.actor, address.host, address.port)
-      val client = RemoteClient.clientFor(address.host, address.port)
-      client.addListener(listenerRef)
+      remote.addListener(listenerRef)
       val actorRef = actorOf(new Repeater(repeatBuffer, returnAddress, address, timeout)).start
       repeaters.put(repeaterKey, actorRef)
     }
@@ -214,26 +229,27 @@ class RepeaterClient(returnAddress: Address, repeatBuffer: RepeatBuffer, timeout
   }
 
   def close = {
-    server.removeListener(listenerRef)
+    remote.removeListener(listenerRef)
     try {
       for (repeaterKey <- repeaters.keys) {
         val address = repeaterKey.address
-        val client = RemoteClient.clientFor(address.host, address.port)
-        client.removeListener(listenerRef)
-        client.shutdown
+        remote.removeListener(listenerRef)
+        remote.shutdownClientModule
       }
     } finally {
-      server.shutdown
+      remote.shutdown
     }
   }
 }
+
 class Repeater(repeatBuffer: RepeatBuffer, returnAddress: Address, address: Address, timeout: Int) extends Actor {
   private var currentFrame: Frame = null
+
   def receive = {
     case msg: Message => {
       val envelope = createNewEnvelope()
       val envmsg = EnvelopeSerializer.serialize(envelope, msg)
-      val actorRef = RemoteClient.actorFor(address.actor, address.host, address.port)
+      val actorRef = remote.actorFor(address.actor, address.host, address.port)
       log.debug("Sending envelope %d,frame %d to %s, %s, %d", envelope.id, envelope.frameId, address.actor, address.host, address.port)
       actorRef ! envmsg
       repeatBuffer.addEnvelope(envmsg)
@@ -249,14 +265,14 @@ class Repeater(repeatBuffer: RepeatBuffer, returnAddress: Address, address: Addr
 
   def requestNewFrame(): Frame = {
     log.debug("Requesting new frame from actor %s, host %s, port %d", address.actor, address.host, address.port)
-    var actorRef = RemoteClient.actorFor(address.actor, address.host, address.port)
+    var actorRef = remote.actorFor(address.actor, address.host, address.port)
 
     var success = false
     var frame: Frame = null
     while (!success) {
       try {
-        if(actorRef.isShutdown){
-          actorRef = RemoteClient.actorFor(address.actor, address.host, address.port)
+        if (actorRef.isShutdown) {
+          actorRef = remote.actorFor(address.actor, address.host, address.port)
         }
         val someResponse = actorRef !! FrameRequestProtocol.newBuilder.setAddress(address.toProtocol).setReturnAddress(returnAddress.toProtocol).build
         someResponse match {
@@ -274,10 +290,11 @@ class Repeater(repeatBuffer: RepeatBuffer, returnAddress: Address, address: Addr
         case e: Exception => {
           log.error("Error requesting new frame(%s, %s,%d). retrying.", address.actor, address.host, address.port)
           try {
-            RemoteClient.clientFor( address.host, address.port).connect
+            // TODO how to do this
+            remote.restartClientConnection(new InetSocketAddress(address.host, address.port))
           } catch {
-            case e:Exception => {
-              log.error("Error reconnecting to client before retry:%s",e.getMessage)
+            case e: Exception => {
+              log.error("Error reconnecting to client before retry:%s", e.getMessage)
             }
           }
           Thread.sleep(timeout)

@@ -7,68 +7,81 @@ import org.scalatest.{Spec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.{Actor, ActorRef}
 import akka.actor.Actor._
-import akka.remote.{RemoteServer, RemoteClient}
+import akka.remoteinterface._
 import unit.test.proto.Commands.WorkerCommand
 import java.util.concurrent.{TimeUnit, CyclicBarrier}
 import eip.idempotent.IdempotentProtocol.{FrameRequestProtocol, FrameResponseProtocol}
 import java.io.File
+import akka.remote.netty.{NettyRemoteSupport, NettyRemoteServerModule, NettyRemoteServer}
 
 class ScaledReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
+  def OptimizeLocal = false
+  var optimizeLocal_? = remote.asInstanceOf[NettyRemoteSupport].optimizeLocalScoped_?
   val repeaterServerProxy = new NetworkProxy("localhost", 17000, 17095)
   val proxy = new NetworkProxy("localhost", 18000, 18094)
   val jgroupsConfigFile = new File("src/test/resources/jgroupsConfig.xml")
-  val envelopes = new JGroupEnvelopes(jgroupsConfigFile, new MemEnvelopes(1,10000, 10), "cluster-receivers", 10000)
+  val leftEnvelopes = new JGroupEnvelopes(jgroupsConfigFile, new MemEnvelopes(1, 10000, 10), "cluster-receivers", 10000)
   val BARRIER_TIMEOUT = 5000
-  val idempotentServer = new IdempotentServer(envelopes, 1000)
+  val leftIdempotentServer = new IdempotentServer(leftEnvelopes, 1000)
 
-  val otherEnvelopes = new JGroupEnvelopes(jgroupsConfigFile, new MemEnvelopes(20000,30000, 10), "cluster-receivers", 10000)
-  val otherIdempotentServer = new IdempotentServer(otherEnvelopes, 1000)
+  val rightEnvelopes = new JGroupEnvelopes(jgroupsConfigFile, new MemEnvelopes(20000, 30000, 10), "cluster-receivers", 10000)
+  val rightIdempotentServer = new IdempotentServer(rightEnvelopes, 1000)
 
   val repeatBuffer = new MemRepeatBuffer
   var repeaterClient = new RepeaterClient(new Address("localhost", 17000, "repeater"), repeatBuffer, 1000)
-  val barrier = new CyclicBarrier(2)
-  val otherBarrier = new CyclicBarrier(2)
-  var localActorRef: ActorRef = null
-  var otherLocalActorRef: ActorRef = null
-  var remoteActorRef: ActorRef = null
-  var otherRemoteActorRef: ActorRef = null
-  val loadBalanceServer = new RemoteServer
+  val leftBarrier = new CyclicBarrier(2)
+  val rightBarrier = new CyclicBarrier(2)
+  var leftLocalActorRef: ActorRef = null
+  var rightLocalActorRef: ActorRef = null
+  var leftRemoteActorRef: ActorRef = null
+  var rightRemoteActorRef: ActorRef = null
+  val loadBalanceServer = new NettyRemoteSupport
   var repeaterRef: ActorRef = null
-  //returnAddress differs from start because the proxy is in between
-  repeaterClient.start("localhost", 17095)
-  repeaterServerProxy.start
 
   override def beforeAll(configMap: Map[String, Any]) {
-    localActorRef = actorOf(new ConnTestActor(barrier))
-    otherLocalActorRef = actorOf(new ConnTestActor(otherBarrier))
-    idempotentServer.start("localhost", 18095)
-    remoteActorRef = idempotentServer.register("remote-test-actor", localActorRef)
+    if (!OptimizeLocal)
+      remote.asInstanceOf[NettyRemoteSupport].optimizeLocal.set(false) //Can't run the test if we're eliminating all remote calls
+    //returnAddress differs from start because the proxy is in between
+    repeaterClient.start("localhost", 17095)
+    repeaterServerProxy.start
+    val leftModule = new NettyRemoteSupport
+    leftIdempotentServer.remoteModule = leftModule
+    val rightModule = new NettyRemoteSupport
+    rightIdempotentServer.remoteModule = rightModule
 
-    otherIdempotentServer.start("localhost", 18096)
-    otherRemoteActorRef = otherIdempotentServer.register("remote-test-actor", otherLocalActorRef)
+    leftLocalActorRef = actorOf(new ConnTestActor(leftBarrier))
+    rightLocalActorRef = actorOf(new ConnTestActor(rightBarrier))
+    leftIdempotentServer.start("localhost", 18095)
+    leftRemoteActorRef = leftIdempotentServer.register("remote-test-actor", leftLocalActorRef)
+
+    rightIdempotentServer.start("localhost", 18096)
+    rightRemoteActorRef = rightIdempotentServer.register("remote-test-actor", rightLocalActorRef)
 
     loadBalanceServer.start("localhost", 18094)
     proxy.start
     repeaterRef = repeaterClient.repeaterFor("remote-test-actor", "localhost", 18000);
-    loadBalanceServer.register("remote-test-actor", actorOf(new RoundRobinActor(repeaterRef, List(remoteActorRef, otherRemoteActorRef))))
+    loadBalanceServer.register("remote-test-actor", actorOf(new RoundRobinActor(repeaterRef, List(leftRemoteActorRef, rightRemoteActorRef))))
 
   }
 
   override def afterAll(configMap: Map[String, Any]) {
+    if (!OptimizeLocal)
+      remote.asInstanceOf[NettyRemoteSupport].optimizeLocal.set(optimizeLocal_?) //Reset optimizelocal after all tests
     try {
       Thread.sleep(1000)
       proxy.stop
       repeaterServerProxy.stop
-      idempotentServer.shutdown
-      otherIdempotentServer.shutdown
+      leftIdempotentServer.shutdown
+      rightIdempotentServer.shutdown
       loadBalanceServer.shutdown
       repeaterClient.close
     } catch {
       case e => ()
     } finally {
-      RemoteClient.shutdownAll
+      remote.shutdownClientModule
     }
   }
+
   describe("Network load balanced idempotent receivers") {
     describe("when messages are sent to a load balancer") {
       it("should be received by one of the idempotent receivers for that frame") {
@@ -76,76 +89,76 @@ class ScaledReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAl
         for (i <- 1 to 9) {
           repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
           // all envelopes should be forwarded to one side (that owns the frame)
-          barrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
-          barrier.reset
-          assertReply(localActorRef,i)
+          leftBarrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
+          leftBarrier.reset
+          assertReply(leftLocalActorRef, i)
         }
-        var frames = envelopes.getIncompleteFrames
+        var frames = leftEnvelopes.getIncompleteFrames
         frames should have size (1)
         var incompleteFrame: Frame = null
         for (frame <- frames) {
           incompleteFrame = frame
-          envelopes.getEnvelopeIds(frame.id) should have size (9)
-          envelopes.isFrameComplete(frame.id) should be(false)
+          leftEnvelopes.getEnvelopeIds(frame.id) should have size (9)
+          leftEnvelopes.isFrameComplete(frame.id) should be(false)
         }
-        var otherFrames = otherEnvelopes.getIncompleteFrames
+        var otherFrames = rightEnvelopes.getIncompleteFrames
         otherFrames should have size (0)
 
         repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
         // all envelopes should be forwarded to one side (that owns the frame)
-        barrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
-        barrier.reset
-        assertReply(localActorRef,10)
+        leftBarrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
+        leftBarrier.reset
+        assertReply(leftLocalActorRef, 10)
 
         Thread.sleep(5000)
         // should now be complete
-        otherFrames = otherEnvelopes.getIncompleteFrames
+        otherFrames = rightEnvelopes.getIncompleteFrames
         otherFrames should have size (0)
-        frames = envelopes.getIncompleteFrames
+        frames = leftEnvelopes.getIncompleteFrames
         frames should have size (0)
-        envelopes.isFrameComplete(incompleteFrame.id) should be(true)
-        envelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
-        otherEnvelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
+        leftEnvelopes.isFrameComplete(incompleteFrame.id) should be(true)
+        leftEnvelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
+        rightEnvelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
       }
       it("should receive another frame on the other idempotent receiver") {
         // should now switch to the other idempotent server
         for (i <- 1 to 9) {
           repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
           // all envelopes should be forwarded to one side (that owns the frame)
-          otherBarrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
-          otherBarrier.reset
-          assertReply(otherLocalActorRef,i)
+          rightBarrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
+          rightBarrier.reset
+          assertReply(rightLocalActorRef, i)
 
         }
-        envelopes.getIncompleteFrames should have size(0)
-        
-        var otherFrames = otherEnvelopes.getIncompleteFrames
+        leftEnvelopes.getIncompleteFrames should have size (0)
+
+        var otherFrames = rightEnvelopes.getIncompleteFrames
         otherFrames should have size (1)
-        var frames = envelopes.getIncompleteFrames
+        var frames = leftEnvelopes.getIncompleteFrames
         frames should have size (0)
 
         var incompleteFrame: Frame = null
         for (frame <- otherFrames) {
           incompleteFrame = frame
-          otherEnvelopes.getEnvelopeIds(frame.id) should have size (9)
-          otherEnvelopes.isFrameComplete(frame.id) should be(false)
+          rightEnvelopes.getEnvelopeIds(frame.id) should have size (9)
+          rightEnvelopes.isFrameComplete(frame.id) should be(false)
         }
         repeaterRef ! WorkerCommand.newBuilder.setId(1L).setName("name-worker").setData("data-worker").build
         // all envelopes should be forwarded to one side (that owns the frame)
-        otherBarrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
-        otherBarrier.reset
-        assertReply(otherLocalActorRef,10)
+        rightBarrier.await(BARRIER_TIMEOUT, TimeUnit.MILLISECONDS)
+        rightBarrier.reset
+        assertReply(rightLocalActorRef, 10)
         Thread.sleep(5000)
 
-        otherFrames = otherEnvelopes.getIncompleteFrames
+        otherFrames = rightEnvelopes.getIncompleteFrames
         otherFrames should have size (0)
-        frames = envelopes.getIncompleteFrames
+        frames = leftEnvelopes.getIncompleteFrames
         frames should have size (0)
-        otherEnvelopes.isFrameComplete(incompleteFrame.id) should be(true)
-        envelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
-        otherEnvelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
-        assertReply(otherLocalActorRef,10)
-        assertReply(localActorRef,10)
+        rightEnvelopes.isFrameComplete(incompleteFrame.id) should be(true)
+        leftEnvelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
+        rightEnvelopes.getEnvelopeIds(incompleteFrame.id) should have size (0)
+        assertReply(rightLocalActorRef, 10)
+        assertReply(leftLocalActorRef, 10)
       }
     }
   }

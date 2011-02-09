@@ -11,43 +11,51 @@ import akka.actor.{ActorRef, Actor}
 import akka.remote._
 import java.io.{InputStream, OutputStream}
 import java.net.{InetSocketAddress, Socket}
+import akka.remoteinterface._
+import netty.NettyRemoteSupport
 
 /**
  * Test what happens in case of Connection Errors, using a simple Network Proxy that is used to disconnect 'the network'
  * between client and server, or cause problems.
  */
 class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
-  val server = new RemoteServer()
   val proxy = new NetworkProxy("localhost", 18000, 18095)
   val barrier = new CyclicBarrier(2)
-  var actorRef: ActorRef = null
-  var serverListener: ActorRef = null
-  var clientListener: ActorRef = null
-  var client: RemoteClient = null
+  var actorRef: ActorRef = _
+  var serverListener: ActorRef = _
+  var clientListener: ActorRef = _
+  var client: RemoteSupport = _
+
+  def OptimizeLocal = false
+
+  var optimizeLocal_? = remote.asInstanceOf[NettyRemoteSupport].optimizeLocalScoped_?
 
   override def beforeAll(configMap: Map[String, Any]) {
+    if (!OptimizeLocal)
+      remote.asInstanceOf[NettyRemoteSupport].optimizeLocal.set(false) //Can't run the test if we're eliminating all remote calls
+
     serverListener = actorOf(new ConnectionListenerActor())
     serverListener.start
-    server.addListener(serverListener)
-    server.start("localhost", 18095)
+    remote.addListener(serverListener)
+    remote.start("localhost", 18095)
     proxy.start
-    server.register("test", actorOf(new ConnTestActor(barrier)))
-    actorRef = RemoteClient.actorFor("test", "localhost", 18000)
-    client = RemoteClient.clientFor("localhost", 18000)
+    remote.register("test", actorOf(new ConnTestActor(barrier)))
+    actorRef = remote.actorFor("test", "localhost", 18000)
     clientListener = actorOf(new ConnectionListenerActor())
     clientListener.start
-    client.addListener(clientListener);
+    remote.addListener(clientListener);
   }
 
   override def afterAll(configMap: Map[String, Any]) {
+    if (!OptimizeLocal)
+      remote.asInstanceOf[NettyRemoteSupport].optimizeLocal.set(optimizeLocal_?) //Reset optimizelocal after all tests
     try {
-      if (server.isRunning) {
-        server.shutdown
-      }
+      remote.shutdown
     } catch {
       case e => ()
     } finally {
-      RemoteClient.shutdownAll
+      remote.shutdownClientModule
+      remote.shutdownServerModule
       log.info("remote client and server shutdown complete")
     }
   }
@@ -85,16 +93,21 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
       assertNoReply(actorRef)
       proxy.clearInjectedFunctions
     }
+    it("should notify the connection listener of client-write-failed") {
+      val reply = clientListener !! new CountOneWayRequests("client-write-failed")
+      assertAtLeastOneReply(reply)
+    }
+
     it("should notify the connection listener of client-error") {
       val reply = clientListener !! new CountOneWayRequests("client-error")
       assertAtLeastOneReply(reply)
     }
-    
+
     it("should not get a reply at server error") {
       def clientServerProblem(client: Socket, server: Socket, in: InputStream, out: OutputStream): Unit = {
         //write some garbage to server
         in.close()
-        out.write(Array[Byte](10,13,10))
+        out.write(Array[Byte](10, 13, 10))
         out.flush
         out.close
       }
@@ -120,6 +133,11 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
       val reply: Option[Any] = clientListener !! new CountOneWayRequests("client-connect")
       assertAtLeastOneReply(reply)
     }
+    it("should notify the connection listener of client-started") {
+      val reply: Option[Any] = clientListener !! new CountOneWayRequests("client-started")
+      assertAtLeastOneReply(reply)
+    }
+
     it("should notify the connection listener of client-disconnect") {
       val reply = clientListener !! new CountOneWayRequests("client-disconnect")
       assertAtLeastOneReply(reply)
@@ -130,7 +148,8 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
     }
     it("should notify the connection listener of server-client-disconnected") {
       val reply = serverListener !! new CountOneWayRequests("server-client-disconnected")
-      RemoteClient.clientFor("localhost", 18000)
+      //TODO client use
+      //remote.actorFor("localhost", 18000)
       assertAtLeastOneReply(reply)
     }
     it("should notify the connection listener of server-client-connected") {
@@ -138,12 +157,12 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
       assertAtLeastOneReply(reply)
     }
     it("should notify the connection listener of server-shutdown") {
-      server.shutdown
+      remote.shutdownServerModule
       val reply = serverListener !! new CountOneWayRequests("server-shutdown")
       assertAtLeastOneReply(reply)
     }
     it("should notify the connection listener of client-shutdown") {
-      client.shutdown
+      remote.shutdownClientModule
       val reply = clientListener !! new CountOneWayRequests("client-shutdown")
       assertAtLeastOneReply(reply)
     }
@@ -187,6 +206,7 @@ class ConnectionListenerActor extends Actor {
   map += "error" -> 0
   map += "disconnect" -> 0
   map += "connect" -> 0
+
   def countEvent(event: String): Unit = {
     if (map.contains(event)) {
       map(event) = map(event) + 1
@@ -196,23 +216,33 @@ class ConnectionListenerActor extends Actor {
   }
 
   def receive = {
-    case RemoteClientError(cause, client: RemoteClient) => {
-      log.info("listener: client error on %s:%s", client.hostname, client.port)
+    case RemoteClientError(cause, client: RemoteClientModule, address: InetSocketAddress) => {
+      log.info("listener: client error on %s:%s", address.getHostName, address.getPort)
       countEvent("client-error")
     }
-    case RemoteClientDisconnected(client: RemoteClient) => {
-      log.info("listener: client disconnect on %s:%s", client.hostname, client.port)
+    case RemoteClientDisconnected(client: RemoteClientModule, address: InetSocketAddress) => {
+      log.info("listener: client disconnect on %s:%s", address.getHostName, address.getPort)
       countEvent("client-disconnect")
     }
-    case RemoteClientConnected(client: RemoteClient) => {
-      log.info("listener: client connect on %s:%s", client.hostname, client.port)
+    case RemoteClientConnected(client: RemoteClientModule, address: InetSocketAddress) => {
+      log.info("listener: client connect on %s:%s", address.getHostName, address.getPort)
       countEvent("client-connect")
     }
-    case RemoteServerError(cause, server: RemoteServer) => {
+
+    case RemoteClientWriteFailed(request,error:Throwable, client: RemoteClientModule, address: InetSocketAddress) => {
+      log.info("listener: client write failed, error %s on %s:%s", error.getMessage, address.getHostName, address.getPort)
+      countEvent("client-write-failed")
+    }
+
+    case RemoteServerError(cause, server: RemoteServerModule) => {
       log.info("listener: server error.")
       countEvent("server-error")
     }
-    case RemoteClientShutdown(client) => {
+    case RemoteClientStarted(client, address) => {
+      log.info("listener: client started.")
+      countEvent("client-started")
+    }
+    case RemoteClientShutdown(client, address) => {
       log.info("listener: client shutdown.")
       countEvent("client-shutdown")
     }
@@ -224,12 +254,15 @@ class ConnectionListenerActor extends Actor {
       log.info("listener: server started.")
       countEvent("server-started")
     }
-    case RemoteServerClientConnected(server, clientAddresss : Option[InetSocketAddress]) => {
+    case RemoteServerClientConnected(server, clientAddresss: Option[InetSocketAddress]) => {
       log.info("listener: client connected to server.")
       countEvent("server-client-connected")
-
     }
-    case RemoteServerClientDisconnected(server, clientAddresss : Option[InetSocketAddress]) => {
+    case RemoteServerClientClosed(server, clientAddresss: Option[InetSocketAddress]) => {
+      log.info("listener: client disconnected from server.")
+      countEvent("server-client-closed")
+    }
+    case RemoteServerClientDisconnected(server, clientAddresss: Option[InetSocketAddress]) => {
       log.info("listener: client disconnected from server.")
       countEvent("server-client-disconnected")
     }

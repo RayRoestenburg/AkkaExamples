@@ -2,10 +2,9 @@ import sbt._
 import Process._
 import sbt_akka_bivy._
 class Project(info: ProjectInfo) extends DefaultProject(info) with AkkaProject with AkkaKernelDeployment{
-  val AkkaRepo = "Akka Repository" at "http://scalablesolutions.se/akka/repository"
   val akkaCamel = akkaModule("camel")
-  val akkaKernel = akkaModule("kernel")
   val akkaRedis = akkaModule("persistence-redis")
+
   val junit = "junit" % "junit" % "4.8.1" % "test->default"
   val camelFtp= "org.apache.camel" % "camel-ftp" % "2.5.0" % "compile"
   val camelMina= "org.apache.camel" % "camel-mina" % "2.5.0" % "compile"
@@ -18,7 +17,7 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with AkkaProject w
       "tools-snapshots" at "http://scala-tools.org/repo-snapshots/",
       "jboss" at "http://repository.jboss.org/maven2",
       "fusesource" at "http://repo.fusesource.com/maven2-all"
-  ) 
+  )
  
   // dont include integration and performance tests by default.
   override def includeTest(s: String) = {!s.contains("integration.") && !s.contains("performance.")}

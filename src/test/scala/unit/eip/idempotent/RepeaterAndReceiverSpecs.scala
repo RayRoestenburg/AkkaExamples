@@ -1,7 +1,6 @@
 package unit.eip.idempotent
 
 import org.scalatest.matchers.ShouldMatchers
-import akka.remote.{RemoteServer, RemoteClient}
 import tools.NetworkProxy
 import akka.actor.Actor._
 import akka.actor.{ActorRef, Actor}
@@ -12,22 +11,28 @@ import akka.util.Logging
 import unit.test.proto.Commands.WorkerCommand
 import java.io.{InputStream, OutputStream}
 import java.net.Socket
+import akka.remote.netty.NettyRemoteSupport
 
 class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
-  val repeaterServerProxy = new NetworkProxy("localhost", 17000, 17095)
+  def OptimizeLocal = false
+  var optimizeLocal_? = remote.asInstanceOf[NettyRemoteSupport].optimizeLocalScoped_?
+  val repeaterServerProxy = new NetworkProxy("localhost", 17000, 18095)
   val proxy = new NetworkProxy("localhost", 18000, 18095)
-  val envelopes = new MemEnvelopes(1,1000,10)
+  val envelopes = new MemEnvelopes(1, 1000, 10)
   val BARRIER_TIMEOUT = 5000
   val idempotentServer = new IdempotentServer(envelopes, 1000)
   val repeatBuffer = new MemRepeatBuffer
   var repeaterClient = new RepeaterClient(new Address("localhost", 17000, "repeater"), repeatBuffer, 1000)
   val barrier = new CyclicBarrier(2)
   var localActorRef: ActorRef = null
+  // starting repeater on same port as server, since change in akka from RemoteServer to Actor.remote.
   //returnAddress differs from start because the proxy is in between
-  repeaterClient.start("localhost", 17095)
+  repeaterClient.start("localhost", 18095)
   repeaterServerProxy.start
 
   override def beforeAll(configMap: Map[String, Any]) {
+    if (!OptimizeLocal)
+      remote.asInstanceOf[NettyRemoteSupport].optimizeLocal.set(false) //Can't run the test if we're eliminating all remote calls
     localActorRef = actorOf(new ConnTestActor(barrier))
     idempotentServer.start("localhost", 18095)
     idempotentServer.register("remote-test-actor", localActorRef)
@@ -36,6 +41,8 @@ class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAf
   }
 
   override def afterAll(configMap: Map[String, Any]) {
+    if (!OptimizeLocal)
+      remote.asInstanceOf[NettyRemoteSupport].optimizeLocal.set(optimizeLocal_?) //Reset optimizelocal after all tests
     try {
       Thread.sleep(1000)
       proxy.stop
@@ -45,9 +52,10 @@ class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAf
     } catch {
       case e => ()
     } finally {
-      RemoteClient.shutdownAll
+      remote.shutdownClientModule
     }
   }
+
   describe("The Repeater") {
     describe("when a message is sent through the repeater") {
       it("should be received by the remote actor through the idempotent receiver") {
@@ -125,7 +133,7 @@ class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAf
         for (frame <- frames) {
           val envelopesRepeater = repeatBuffer.getEnvelopes(frame.id)
           for (envelope <- envelopesRepeater) {
-            val receiverActorRef = RemoteClient.actorFor("remote-test-actor", "localhost", 18000)
+            val receiverActorRef = remote.actorFor("remote-test-actor", "localhost", 18000)
             receiverActorRef ! envelope
           }
           envelopes.getEnvelopeIds(frame.id) should have size (5)
@@ -192,7 +200,7 @@ class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAf
         for (frame <- previousFrames) {
           val envelopes = repeatBuffer.getEnvelopes(frame.id)
           // expecting repeat frames from server to have happened
-          envelopes.size should be < (9)
+          envelopes.size should be <= (9)
         }
         barrier.reset
         val repeaterRef = repeaterClient.repeaterFor("remote-test-actor", "localhost", 18000);
