@@ -69,7 +69,7 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
       messages.reverse should be (List("some","more","text"))
     }
     "A SequencingActor" should {
-      "Also pass a message" in {
+      "receive an interesting message at some point " in {
         within(100 millis) {
           seqRef ! "something"
           var count =0
