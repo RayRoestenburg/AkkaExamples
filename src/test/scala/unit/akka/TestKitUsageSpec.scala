@@ -73,7 +73,6 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
     "receive an interesting message at some point " in {
       within(100 millis) {
         seqRef ! "something"
-        var count = 0
         ignoreMsg {
           case msg: String => msg != "something"
         }
