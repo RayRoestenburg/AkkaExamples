@@ -12,7 +12,8 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with AkkaProject w
   // for coverage
   val emma = "emma" % "emma" % "2.0.5312" % "test->default"
   val jgroups = "jgroups" % "jgroups" % "2.9.0.GA" % "compile" 
-  val scalatest = "org.scalatest" % "scalatest" % "1.2-for-scala-2.8.0.final-SNAPSHOT" % "test->default"
+  val scalatest = "org.scalatest" % "scalatest" % "1.3" % "test->default"
+
   override def repositories = Set(
       "tools-snapshots" at "http://scala-tools.org/repo-snapshots/",
       "jboss" at "http://repository.jboss.org/maven2",
