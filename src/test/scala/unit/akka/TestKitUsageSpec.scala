@@ -19,8 +19,8 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
   val filterRef = actorOf(new FilteringActor(testActor)).start
   val randomHead = Random.nextInt(6)
   val randomTail = Random.nextInt(10)
-  val headList = List().padTo(randomHead,"0")
-  val tailList = List().padTo(randomTail,"1")
+  val headList = List().padTo(randomHead, "0")
+  val tailList = List().padTo(randomTail, "1")
   val seqRef = actorOf(new SequencingActor(testActor, headList, tailList)).start
 
   override protected def afterAll(): scala.Unit = {
@@ -62,29 +62,28 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
         filterRef ! 1
 
         receiveWhile(500 millis) {
-          case msg:String => messages = msg :: messages
+          case msg: String => messages = msg :: messages
         }
       }
-      messages.length should be (3)
-      messages.reverse should be (List("some","more","text"))
+      messages.length should be(3)
+      messages.reverse should be(List("some", "more", "text"))
     }
-    "A SequencingActor" should {
-      "receive an interesting message at some point " in {
-        within(100 millis) {
-          seqRef ! "something"
-          var count =0
-          ignoreMsg {
-            case msg:String => msg != "something"
-          }
-          expectMsg("something")
-          ignoreMsg {
-            case msg:String => msg == "1"
-          }
+  }
+  "A SequencingActor" should {
+    "receive an interesting message at some point " in {
+      within(100 millis) {
+        seqRef ! "something"
+        var count = 0
+        ignoreMsg {
+          case msg: String => msg != "something"
+        }
+        expectMsg("something")
+        ignoreMsg {
+          case msg: String => msg == "1"
         }
       }
     }
   }
-
 }
 
 /**
@@ -114,7 +113,7 @@ class ForwardingActor(next: ActorRef) extends Actor {
  */
 class FilteringActor(next: ActorRef) extends Actor {
   def receive = {
-    case msg:String=> {
+    case msg: String => {
       next ! msg
     }
     case _ => None
@@ -125,7 +124,7 @@ class FilteringActor(next: ActorRef) extends Actor {
  * An actor that sends a sequence of messages with a random head list, an interesting value and a random tail list
  * The idea is that you would like to test that the interesting value is received and that you cant be bothered with the rest
  */
-class SequencingActor(next: ActorRef, head:List[String], tail:List[String]) extends Actor {
+class SequencingActor(next: ActorRef, head: List[String], tail: List[String]) extends Actor {
   def receive = {
     case msg => {
       head map (next ! _)
