@@ -80,6 +80,7 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
         ignoreMsg {
           case msg: String => msg == "1"
         }
+        expectNoMsg
       }
     }
   }
