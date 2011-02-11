@@ -3,7 +3,8 @@ package unit.akka
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{WordSpec, BeforeAndAfterAll}
 import akka.actor.Actor._
-import akka.util.{Duration, TestKit}
+import akka.util.duration._
+import akka.util.TestKit
 import java.util.concurrent.TimeUnit
 import akka.actor.{ActorRef, Actor}
 import util.Random
@@ -31,8 +32,8 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
   }
 
   "An EchoActor" should {
-    "Respond with the same message it receive" in {
-      within(Duration(100, TimeUnit.MILLISECONDS)) {
+    "Respond with the same message it receives" in {
+      within(100 millis) {
         echoRef ! "test"
         expectMsg("test")
       }
@@ -40,7 +41,7 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
   }
   "A ForwardingActor" should {
     "Forward a message it receives" in {
-      within(Duration(100, TimeUnit.MILLISECONDS)) {
+      within(100 millis) {
         forwardRef ! "test"
         expectMsg("test")
       }
@@ -49,7 +50,7 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
   "A FilteringActor" should {
     "Filter all messages, except expected messagetypes it receives" in {
       var messages = List[String]()
-      within(Duration(100, TimeUnit.MILLISECONDS)) {
+      within(100 millis) {
         filterRef ! "test"
         expectMsg("test")
         filterRef ! 1
@@ -60,7 +61,7 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
         filterRef ! "text"
         filterRef ! 1
 
-        receiveWhile(Duration(500, TimeUnit.MILLISECONDS)) {
+        receiveWhile(500 millis) {
           case msg:String => messages = msg :: messages
         }
       }
@@ -69,7 +70,7 @@ class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatche
     }
     "A SequencingActor" should {
       "Also pass a message" in {
-        within(Duration(100, TimeUnit.MILLISECONDS)) {
+        within(100 millis) {
           seqRef ! "something"
           var count =0
           ignoreMsg {
