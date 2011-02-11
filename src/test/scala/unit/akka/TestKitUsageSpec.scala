@@ -1,11 +1,135 @@
 package unit.akka
 
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{WordSpec, BeforeAndAfterAll}
+import akka.actor.Actor._
+import akka.util.{Duration, TestKit}
+import java.util.concurrent.TimeUnit
+import akka.actor.{ActorRef, Actor}
+import util.Random
+
 /**
- * Created by IntelliJ IDEA.
- * User: rroestenburg
- * Date: 2/11/11
- * Time: 8:02 PM
- * To change this template use File | Settings | File Templates.
+ * a Test to show some TestKit examples
  */
 
-class TestKitUsageSpec
+class TestKitUsageSpec extends WordSpec with BeforeAndAfterAll with ShouldMatchers with TestKit {
+  val echoRef = actorOf(new EchoActor).start
+  val forwardRef = actorOf(new ForwardingActor(testActor)).start
+  val filterRef = actorOf(new FilteringActor(testActor)).start
+  val randomHead = Random.nextInt(6)
+  val randomTail = Random.nextInt(10)
+  val headList = List().padTo(randomHead,"0")
+  val tailList = List().padTo(randomTail,"1")
+  val seqRef = actorOf(new SequencingActor(testActor, headList, tailList)).start
+
+  override protected def afterAll(): scala.Unit = {
+    stopTestActor
+    echoRef.stop
+    forwardRef.stop
+    filterRef.stop
+    seqRef.stop
+  }
+
+  "An EchoActor" should {
+    "Respond with the same message it receive" in {
+      within(Duration(100, TimeUnit.MILLISECONDS)) {
+        echoRef ! "test"
+        expectMsg("test")
+      }
+    }
+  }
+  "A ForwardingActor" should {
+    "Forward a message it receives" in {
+      within(Duration(100, TimeUnit.MILLISECONDS)) {
+        forwardRef ! "test"
+        expectMsg("test")
+      }
+    }
+  }
+  "A FilteringActor" should {
+    "Filter all messages, except expected messagetypes it receives" in {
+      var messages = List[String]()
+      within(Duration(100, TimeUnit.MILLISECONDS)) {
+        filterRef ! "test"
+        expectMsg("test")
+        filterRef ! 1
+        expectNoMsg
+        filterRef ! "some"
+        filterRef ! "more"
+        filterRef ! 1
+        filterRef ! "text"
+        filterRef ! 1
+
+        receiveWhile(Duration(500, TimeUnit.MILLISECONDS)) {
+          case msg:String => messages = msg :: messages
+        }
+      }
+      messages.length should be (3)
+      messages.reverse should be (List("some","more","text"))
+    }
+    "A SequencingActor" should {
+      "Also pass a message" in {
+        within(Duration(100, TimeUnit.MILLISECONDS)) {
+          seqRef ! "something"
+          var count =0
+          ignoreMsg {
+            case msg:String => msg != "something"
+          }
+          expectMsg("something")
+          ignoreMsg {
+            case msg:String => msg == "1"
+          }
+        }
+      }
+    }
+  }
+
+}
+
+/**
+ * An Actor that echoes everything you send to it
+ */
+class EchoActor extends Actor {
+  def receive = {
+    case msg => {
+      self.reply(msg)
+    }
+  }
+}
+
+/**
+ * An Actor that forwards every message to a next Actor
+ */
+class ForwardingActor(next: ActorRef) extends Actor {
+  def receive = {
+    case msg => {
+      next ! msg
+    }
+  }
+}
+
+/**
+ * An Actor that only forwards certain messages to a next Actor
+ */
+class FilteringActor(next: ActorRef) extends Actor {
+  def receive = {
+    case msg:String=> {
+      next ! msg
+    }
+    case _ => None
+  }
+}
+
+/**
+ * An actor that sends a sequence of messages with a random head list, an interesting value and a random tail list
+ * The idea is that you would like to test that the interesting value is received and that you cant be bothered with the rest
+ */
+class SequencingActor(next: ActorRef, head:List[String], tail:List[String]) extends Actor {
+  def receive = {
+    case msg => {
+      head map (next ! _)
+      next ! msg
+      tail map (next ! _)
+    }
+  }
+}
