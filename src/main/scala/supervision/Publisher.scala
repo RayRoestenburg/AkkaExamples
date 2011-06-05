@@ -4,6 +4,7 @@ import akka.actor.Actor
 import java.io.{Closeable, Flushable, IOException, Writer}
 
 /**
+ * Idea for supervision example
  * publishes to a Writer.
  * Temporary lifecycle needed, on failure will be stopped.
  * TODO how to handle blocking Actor -> could use futures inside actor? or check mailboxsize and kill from supervisor
