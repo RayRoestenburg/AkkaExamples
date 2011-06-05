@@ -4,10 +4,9 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{WordSpec, BeforeAndAfterAll}
 import akka.actor.Actor._
 import akka.util.duration._
-import akka.util.TestKit
-import java.util.concurrent.TimeUnit
 import akka.actor.{ActorRef, Actor}
 import util.Random
+import akka.testkit.TestKit
 
 /**
  * a Test to show some TestKit examples

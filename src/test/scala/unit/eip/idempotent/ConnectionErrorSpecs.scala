@@ -1,7 +1,6 @@
 package unit.eip.idempotent
 
 import org.scalatest.matchers.ShouldMatchers
-import akka.util.Logging
 import org.scalatest.{BeforeAndAfterAll, Spec}
 import tools.NetworkProxy
 import akka.actor.Actor._
@@ -13,6 +12,7 @@ import java.io.{InputStream, OutputStream}
 import java.net.{InetSocketAddress, Socket}
 import akka.remoteinterface._
 import netty.NettyRemoteSupport
+import akka.event.slf4j.Logging
 
 /**
  * Test what happens in case of Connection Errors, using a simple Network Proxy that is used to disconnect 'the network'
@@ -201,7 +201,7 @@ class ConnectionErrorSpecs extends Spec with ShouldMatchers with BeforeAndAfterA
 
 }
 
-class ConnectionListenerActor extends Actor {
+class ConnectionListenerActor extends Actor with Logging{
   val map = new HashMap[String, Int]
   map += "error" -> 0
   map += "disconnect" -> 0
@@ -225,12 +225,12 @@ class ConnectionListenerActor extends Actor {
       countEvent("client-disconnect")
     }
     case RemoteClientConnected(client: RemoteClientModule, address: InetSocketAddress) => {
-      log.info("listener: client connect on %s:%s", address.getHostName, address.getPort)
+      log.info("listener: client connect on %s:%s".format(address.getHostName, address.getPort))
       countEvent("client-connect")
     }
 
     case RemoteClientWriteFailed(request,error:Throwable, client: RemoteClientModule, address: InetSocketAddress) => {
-      log.info("listener: client write failed, error %s on %s:%s", error.getMessage, address.getHostName, address.getPort)
+      log.info("listener: client write failed, error %s on %s:%s".format(error.getMessage, address.getHostName, address.getPort))
       countEvent("client-write-failed")
     }
 

@@ -1,9 +1,9 @@
 package unit.eip.idempotent
 
-import akka.util.Logging
 import org.scalatest.{Spec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import eip.idempotent._
+import akka.event.slf4j.Logging
 
 class EnvelopesSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
   def createEnvelopes: Envelopes = {

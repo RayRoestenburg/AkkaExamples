@@ -8,9 +8,7 @@ import eip.idempotent.IdempotentProtocol.EnvelopeProtocol
 import collection.mutable.Queue
 import java.util.concurrent.ConcurrentHashMap
 import java.io.{ObjectOutput, ObjectInput, Externalizable, File}
-import akka.util.Logging
-import akka.actor.ActorRegistry
-
+import akka.event.slf4j.Logging
 /**
  * Keeps track of Envelopes on the Idempotent Receiver side
  */
@@ -228,7 +226,7 @@ class JGroupEnvelopes(configFile: File, source: Envelopes, cluster: String, time
           val someActorRef = idempotentServer.idempotentActorRef(frame.address.actor)
           someActorRef match {
             case Some(actorRef) => actorRef ! envelopeProtocol
-            case None => log.error("Configuration error, could not find idempotent actor %s, envelope %d of frame %d will be lost", frame.address.actor, envelope.id, frameId)
+            case None => log.error("Configuration error, could not find idempotent actor %s, envelope %d of frame %d will be lost".format( frame.address.actor, envelope.id, frameId))
           }
         }
         case None => log.debug("Ignoring envelope %d, received through JGroups, not owning frame %d", envelope.id, frameId)

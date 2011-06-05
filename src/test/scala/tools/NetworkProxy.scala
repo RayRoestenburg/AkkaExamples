@@ -1,11 +1,10 @@
 package tools
 
 import java.util.concurrent.CyclicBarrier
-import akka.util.Logging
 import java.io._
 import akka.actor.Actor._
 import java.net.{SocketException, ServerSocket, Socket}
-
+import akka.event.slf4j.Logging
 /**
  * A very simple (Blocking I/O) Network Proxy that will be used to simulate network errors.
  * The proxy sits between the remote actors (between "client" and "server"). The proxy can be stopped and started
@@ -39,7 +38,7 @@ class NetworkProxy extends Logging {
 
   def start: Unit = {
     if (!started) {
-      log.info("starting network proxy %s local port: %s remote port: %s", host, localPort, remotePort)
+      log.info("starting network proxy %s local port: %s remote port: %s".format(host, localPort, remotePort))
       var t: Thread = new Thread(proxyRunnable)
       t.start
       proxyRunnable.waitUntilStarted
@@ -104,7 +103,7 @@ class ProxyRunnable extends Runnable with Logging {
           if (closeable != null) closeable.close
         } catch {
           case e: IOException => {
-            log.error(e, "IOException in closing resource.")
+            log.error("IOException in closing resource, %s".format(e.getMessage))
           }
         }
       }
@@ -132,7 +131,7 @@ class ProxyRunnable extends Runnable with Logging {
     }
     catch {
       case e: IOException => {
-        log.error(e, "IOException in network proxy, connecting to remote %s:%s.", host, remotePort)
+        log.error("IOException in network proxy, [%s], connecting to remote %s:%s.".format(e.getMessage, host, remotePort))
         val p: PrintWriter = new PrintWriter(client.getOutputStream)
         using(p, client) {
           p.print("Proxy server cannot connect to " + host + ":" + remotePort + ":\n" + e + "\n")
@@ -173,7 +172,7 @@ class ProxyRunnable extends Runnable with Logging {
     }
     catch {
       case e: IOException => {
-        log.error(e, "IOException in network proxy reading from streamFromclient, writing to streamToServer.")
+        log.error("IOException in network proxy reading from streamFromclient, writing to streamToServer, %s".format(e.getMessage))
       }
     }
   }
@@ -200,10 +199,10 @@ class ProxyRunnable extends Runnable with Logging {
     }
     catch {
       case e: SocketException => {
-        log.error(e, "SocketException in network proxy in the reading streamFromServer, writing to streamToClient.")
+        log.error("SocketException in network proxy in the reading streamFromServer, writing to streamToClient, %s".format(e.getMessage))
       }
       case e: IOException => {
-        log.error(e, "IOException in network proxy in the reading streamFromServer, writing to streamToClient.")
+        log.error("IOException in network proxy in the reading streamFromServer, writing to streamToClient, %s".format(e.getMessage))
       }
     }
   }
@@ -227,7 +226,7 @@ class ProxyRunnable extends Runnable with Logging {
       }
       catch {
         case e: IOException => {
-          log.error(e, "Error in Proxy Run")
+          log.error("Error in Proxy Run, %s, %s".format(e,e.getMessage))
         }
       }
     }
@@ -257,7 +256,7 @@ class ProxyRunnable extends Runnable with Logging {
     }
     catch {
       case e: Exception => {
-        log.error(e, "Exception stopping proxy.")
+        log.error("Exception stopping proxy, %s %s".format(e,e.getMessage))
       }
     }
   }

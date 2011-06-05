@@ -1,18 +1,17 @@
 package unit.eip.idempotent
 
-import akka.util.Logging
 import eip.idempotent._
 import tools.NetworkProxy
 import org.scalatest.{Spec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.{Actor, ActorRef}
 import akka.actor.Actor._
-import akka.remoteinterface._
 import unit.test.proto.Commands.WorkerCommand
 import java.util.concurrent.{TimeUnit, CyclicBarrier}
-import eip.idempotent.IdempotentProtocol.{FrameRequestProtocol, FrameResponseProtocol}
+import eip.idempotent.IdempotentProtocol.{FrameRequestProtocol}
 import java.io.File
-import akka.remote.netty.{NettyRemoteSupport, NettyRemoteServerModule, NettyRemoteServer}
+import akka.remote.netty.{NettyRemoteSupport}
+import akka.event.slf4j.Logging
 
 class ScaledReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
   def OptimizeLocal = false

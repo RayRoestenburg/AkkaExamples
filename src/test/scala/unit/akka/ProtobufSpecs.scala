@@ -9,6 +9,7 @@ import org.scalatest.matchers.{MustMatchers, ShouldMatchers}
 import unit.test.proto.Commands
 import unit.test.proto.Commands.WorkerCommand
 import unit.akka.CommandBuilder._
+import akka.event.slf4j.Logging
 
 /**
  * Test to check if communicating with protobuf serialized messages works.
@@ -68,7 +69,7 @@ class ProtobufSpecs extends Spec with BeforeAndAfterAll with MustMatchers {
 /**
  * Actor that sends back the message uppercased.
  */
-class TestProtobufWorker extends Actor {
+class TestProtobufWorker extends Actor with Logging {
   def receive = {
     case msg: Commands.WorkerCommand => {
       log.info("received protobuf command pojo:" + msg.getId)

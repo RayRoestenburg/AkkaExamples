@@ -1,6 +1,5 @@
 package unit.akka
 
-import akka.util.Logging
 import org.scalatest.{Spec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor.Actor._
@@ -8,6 +7,7 @@ import akka.actor.Actor
 import akka.remote.netty.NettyRemoteSupport
 import java.util.concurrent.{TimeUnit, CyclicBarrier}
 import akka.dispatch.Future
+import akka.event.slf4j.Logging
 
 /**
  * Tests a remote actor interaction
@@ -64,7 +64,7 @@ class RemoteClientTest extends Spec with ShouldMatchers with BeforeAndAfterAll w
 /**
  * Simple test actor. sets a barrier on !, sends the msg it receives on !! as the response.
  */
-class TestActor(barrier: CyclicBarrier) extends Actor {
+class TestActor(barrier: CyclicBarrier) extends Actor with Logging{
   def receive = {
     case msg: Any => {
       log.info("msg: %s", msg.toString)

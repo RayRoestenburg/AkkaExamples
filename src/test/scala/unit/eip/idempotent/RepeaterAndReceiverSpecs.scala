@@ -7,11 +7,11 @@ import akka.actor.{ActorRef, Actor}
 import java.util.concurrent.{TimeUnit, CyclicBarrier}
 import eip.idempotent._
 import org.scalatest.{BeforeAndAfterAll, Spec}
-import akka.util.Logging
 import unit.test.proto.Commands.WorkerCommand
 import java.io.{InputStream, OutputStream}
 import java.net.Socket
 import akka.remote.netty.NettyRemoteSupport
+import akka.event.slf4j.Logging
 
 class RepeaterAndReceiverSpecs extends Spec with ShouldMatchers with BeforeAndAfterAll with Logging {
   def OptimizeLocal = false
